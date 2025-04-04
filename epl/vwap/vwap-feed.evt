@@ -1,0 +1,55 @@
+//
+// Event data feed for the VWAP sample application
+//
+
+// set up initial VWAP calculator for 2% change in "IBM" VWAP in any consecutive
+// 1 second period
+
+BATCH
+com.apama.samples.vwap.VwapWatch("IBM", 1, 0.02)
+
+// send in com.apama.samples.vwap.Trade events
+
+BATCH 500
+com.apama.samples.vwap.Trade("IBM", 125, 10000)
+com.apama.samples.vwap.Trade("IBM", 122, 500)
+com.apama.samples.vwap.Trade("IBM", 124, 15000)
+com.apama.samples.vwap.Trade("IBM", 124, 100)
+com.apama.samples.vwap.Trade("IBM", 124.5, 250)
+com.apama.samples.vwap.Trade("IBM", 123, 750)
+com.apama.samples.vwap.Trade("IBM", 123.5, 5000)
+com.apama.samples.vwap.Trade("IBM", 124, 5050)
+com.apama.samples.vwap.Trade("IBM", 123.5, 1100)
+com.apama.samples.vwap.Trade("IBM", 124, 50)
+com.apama.samples.vwap.Trade("IBM", 124.5, 1500)
+com.apama.samples.vwap.Trade("IBM", 122.5, 9500)
+com.apama.samples.vwap.Trade("IBM", 122, 700)
+com.apama.samples.vwap.Trade("IBM", 122.5, 150)
+com.apama.samples.vwap.Trade("IBM", 122.5, 4000)
+com.apama.samples.vwap.Trade("IBM", 122.5, 4000)
+com.apama.samples.vwap.Trade("IBM", 123, 350)
+com.apama.samples.vwap.Trade("IBM", 122.5, 5500)
+com.apama.samples.vwap.Trade("IBM", 122, 1000)
+com.apama.samples.vwap.Trade("IBM", 123.5, 9500)
+
+BATCH 1500
+com.apama.samples.vwap.Trade("IBM", 122, 5000)
+com.apama.samples.vwap.Trade("IBM", 121.5, 5000)
+com.apama.samples.vwap.Trade("IBM", 120, 1200)
+com.apama.samples.vwap.Trade("IBM", 119.5, 500)
+com.apama.samples.vwap.Trade("IBM", 120, 2500)
+com.apama.samples.vwap.Trade("IBM", 120.5, 7250)
+com.apama.samples.vwap.Trade("IBM", 119.5, 50)
+com.apama.samples.vwap.Trade("IBM", 119, 1150)
+com.apama.samples.vwap.Trade("IBM", 118.5, 10000)
+com.apama.samples.vwap.Trade("IBM", 118.5, 350)
+com.apama.samples.vwap.Trade("IBM", 118, 6200)
+com.apama.samples.vwap.Trade("IBM", 119, 110)
+com.apama.samples.vwap.Trade("IBM", 118.5, 4700)
+com.apama.samples.vwap.Trade("IBM", 119, 2150)
+com.apama.samples.vwap.Trade("IBM", 118.5, 40)
+com.apama.samples.vwap.Trade("IBM", 118, 5050)
+com.apama.samples.vwap.Trade("IBM", 118.5, 2350)
+com.apama.samples.vwap.Trade("IBM", 118.5, 200)
+com.apama.samples.vwap.Trade("IBM", 118, 1000)
+com.apama.samples.vwap.Trade("IBM", 117.5, 5000)

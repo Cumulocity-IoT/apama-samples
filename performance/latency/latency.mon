@@ -1,0 +1,41 @@
+// $Copyright(c) 2013 Progress Software Corporation. All Rights Reserved.$ 
+// $Copyright (c) 2013-2018 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+package com.apama.latency;
+
+event LatencyTest
+{
+	any contained_event;
+}
+
+event LatencyRate
+{
+	integer hz;
+	integer probability; 
+	// probability means "1 in n".  If n<= 0, do not measure latency.
+	// This enables use as a throughput controller. 
+}
+
+event LatencyResult
+{
+	float mean;
+	float stddev;
+	integer count;
+	float min;
+	float max;
+	float nth;
+}
+
+event LatencyResultConfig
+{
+	float centile;
+}
+
+event _latency_start
+{
+	float timestamp;
+}
+
+event _latency_end
+{
+}

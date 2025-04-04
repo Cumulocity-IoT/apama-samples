@@ -1,0 +1,53 @@
+// $Copyright(c) 2007-2009 Progress Software Corporation. All Rights Reserved.$ 
+// $Copyright (c) 2013-2016 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$  
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+using com.apama.correlator.timeformat.TimeFormat;
+
+event Result {
+	string s;
+}
+
+monitor serial {
+	integer SIZE:=5000;
+	sequence<float> prices;
+	integer ticks;
+	float startTime;
+	action onload() {
+		on com.apamat.marketdata.Generate() as g {
+			startTime:=TimeFormat.getSystemTime();
+			string symbol;
+			for symbol in g.symbols {
+				spawn analyse(symbol);
+			}
+		}
+	}
+
+	action analyse(string symbol) {
+		monitor.subscribe(symbol);
+		monitor.subscribe("Control");
+		log "Listening for "+symbol at INFO;
+		on all com.apamat.marketdata.Tick(symbol=symbol) as tick {
+			prices.append(tick.price);
+			if(prices.size()>SIZE) {
+				prices.remove(0);
+				sequence<float> sortedPrices:=prices.clone();
+				sortedPrices.sort();
+				float median:=sortedPrices[SIZE/2];
+				float t:=0.0;
+				float p;
+				for p in prices {
+					t:=t+p;
+				}
+				ticks:=ticks+1;
+				if(ticks % 1000) = 0 {
+					send com.apamat.marketdata.Statistics(symbol, median, t/SIZE.toFloat()) to "output";
+				}
+			}
+		}
+		on com.apamat.marketdata.Finished() {
+			send com.apamat.marketdata.Finished() to "output";
+			send Result("Time for "+symbol+" was "+(TimeFormat.getSystemTime()-startTime).toString()) to "output";
+		}
+	}
+}
+

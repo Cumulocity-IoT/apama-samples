@@ -1,0 +1,7 @@
+ 
+eplPlugins:
+  FileMonitoringPlugin:
+    pythonFile: "${PARENT_DIR}/../plugins/FileMonitoringPlugin.py"
+    class: FileMonitoringClass
+    config:
+      basePath: ${PARENT_DIR}/../..

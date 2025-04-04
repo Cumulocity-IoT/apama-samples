@@ -1,0 +1,4 @@
+BATCH 0
+"teller1", TransferMoney("teller1", "customera", "customerb", 50.0)
+BATCH 1000
+"teller2", TransferMoney("teller2", "customerb", "customerc", 25.0)

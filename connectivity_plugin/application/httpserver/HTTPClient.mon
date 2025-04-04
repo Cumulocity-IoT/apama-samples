@@ -1,0 +1,81 @@
+/**
+ * $Copyright (c) 2017, 2021 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+ */
+
+package apamax.httpserversample;
+
+using com.apama.exceptions.Exception;
+using com.softwareag.connectivity.ConnectivityPlugins;
+using com.softwareag.connectivity.ExtraFieldsDict;
+using com.softwareag.connectivity.httpclient.RequestType;
+
+@ExtraFieldsDict("extraFields")
+event Temperature
+{
+	integer sensorId;
+	string sensorName;
+	float temperature;
+	dictionary<string,any> extraFields;
+}
+
+
+event HTTPRequest
+{
+	integer id;
+	string path;
+	Temperature data;
+	string method;
+}
+
+event HTTPResponse
+{
+	integer id;
+	string body;
+	string code;
+	string message;
+}
+
+event HTTPError
+{
+	integer id;
+	integer code;
+	string message;
+}
+
+/** Triggers sending a HTTPRequest to the HTTPServer*/
+event SendRequest{
+}
+
+monitor Sender
+{
+
+	action onload()
+	{
+		on all SendRequest() { 
+			integer requestId := integer.incrementCounter("httpClientRequestId");
+
+			Temperature data := new Temperature;
+			data.sensorId := 42;
+			data.sensorName := "Machine A Temperature";
+			data.temperature := 91.34;
+			data.extraFields:={"A":"alpha", "B":"beta"};
+			
+			on HTTPResponse(id=requestId) as resp and not HTTPError(id=requestId) {
+				log "Received response from HTTPServer: " + resp.toString() at INFO;
+			}
+
+			on HTTPError(id=requestId) as err and not HTTPRequest(id=requestId) {
+				log "Received error response from HTTPServer: Code: " + err.code.toString() + " Message: " + err.message + " id: " + requestId.toString() at ERROR;
+			}
+
+			string path:="/sample";
+			string method:= RequestType.PUT;
+			send HTTPRequest(requestId, path, data, method) to "http";
+			log "Sent Request: requestId: " + requestId.toString() + ", path: " + path  + ", method: " + method + ", data: " + data.toString() at INFO;
+		}
+
+		ConnectivityPlugins.onApplicationInitialized();
+	}
+}
+

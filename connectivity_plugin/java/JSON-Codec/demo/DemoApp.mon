@@ -1,0 +1,50 @@
+//*****************************************************************************
+// $Copyright(c) 2016 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+//
+//*****************************************************************************
+package apamax.connectivitysample;
+
+using com.softwareag.connectivity.ConnectivityPlugins;
+
+
+event CustomerLoggedIn {
+	string userId;
+	string name;
+	integer recentOrders;
+}
+
+event Item {
+	string item;
+	float price;
+}
+
+event SpecialOffers {
+	string userId;
+	sequence<Item> offers;
+}
+
+monitor ExampleStore {
+
+	action onload() {
+		monitor.subscribe("jsonChain");
+		
+		on all CustomerLoggedIn() as c {
+			log "Received " + c.toString() at INFO;
+		}
+
+		on all CustomerLoggedIn(userId="jb") as c {
+			log "Sending special offer to "+c.name at INFO;
+			send SpecialOffers(c.userId, [Item("Wine", 12.2)]) to "jsonChain";
+		}
+
+		on all CustomerLoggedIn(recentOrders > 3) as c {
+			log "Sending special offer to "+c.name at INFO;
+			send SpecialOffers(c.userId, [Item("Wine", 10.1), Item("Book", 3.0)]) to "jsonChain";
+		}
+
+		ConnectivityPlugins.onApplicationInitialized();
+
+	}
+}
+

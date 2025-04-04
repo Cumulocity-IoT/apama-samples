@@ -1,0 +1,112 @@
+/**
+ * Upgrade helper to store arbitrary state (in an event) and request/respond to upgrade events.
+ *
+ * $Copyright (c) 2017 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+ */
+package com.apama.sample.upgrader;
+
+// Event to signal an upgrade
+event Upgrade {
+	string name;
+	integer version;
+}
+
+// Response event to Upgrade
+event UpgradeResponse {
+	integer version;
+	any schema;
+}
+
+event Upgrader {
+
+	// Application unique name for this monitor upgrader
+	string name;
+	
+	// Version this upgrader is currently working for
+	integer version;
+
+	// Memory Store table for current state
+	com.apama.memorystore.Table currentStateTable;
+	
+	/** Initialize the Upgrade Helper.
+	 *  Prepare an in memory table to store state.
+	 *  Request info on potential monitors to upgrade.
+	 */
+	action init(string initName, any newSchema, integer initVersion, action<any> oldStateCb, action <> cb) {
+	
+		self.name := initName;
+		self.version := initVersion;
+
+		on com.apama.memorystore.Finished(com.apama.memorystore.Storage.prepareInMemory("StateStore"),*,*) as f {
+			
+			com.apama.memorystore.Store store := com.apama.memorystore.Storage.open("StateStore");
+
+			// Process Upgrade Reponse
+			on UpgradeResponse(version=version) as u {
+				on com.apama.memorystore.Finished(store.prepareFromAny(u.schema),*,*) {
+					com.apama.memorystore.Table oldStateTable := store.open(u.schema.getTypeName());
+					// Iterate all old state
+					com.apama.memorystore.Iterator stateIter := oldStateTable.begin();
+					while (not stateIter.done()) {
+						// Callback to restore this state
+						oldStateCb(stateIter.getRow().getAll(u.schema));
+						stateIter.step();
+					}
+					// Clear the old state table 
+					oldStateTable.clear();
+				}
+			}
+			
+			// Request for Upgrade info
+			route Upgrade(name, version);
+			
+			// Prepare a store. The state event is used as the Schema.
+			on com.apama.memorystore.Finished(store.prepareFromAny(newSchema),*,*) {
+				currentStateTable := store.open(newSchema.getTypeName());
+				cb();
+			}
+		}
+		
+		// Response to Upgrade requests (after all instances) with our version and schema
+		on completed Upgrade(name=name, version>version) as u {
+			route UpgradeResponse(u.version, newSchema);
+		}
+	}
+	
+	/** Setup listener for Upgrade() event to store state and kill monitor instance */
+	action listenForUpgradesAndDie(string stateName, any state) {
+		// Process Upgrade event (save state to our unique name and die)
+		on Upgrade(name=name, version>version) as u {
+			// Save state to MemoryStore using version in the key
+			print "Saving state "+state.valueToString();
+			log "Saving state "+state.valueToString() at INFO;
+			// Store state
+			com.apama.memorystore.Row row := currentStateTable.add(stateName);
+			row.setAll(state);
+			row.forceCommit();
+			// Kill ourselves as a new version will take over
+			die;
+		}
+	}
+	
+	/** Convert between 2 state events, catching and logging any failed fields */
+	static action populateState(any oldState, any newState) returns any {
+		
+		sequence<any> keys := oldState.getKeys();
+		sequence<any> entries := oldState.getEntries();
+		
+		integer i := 0;
+		while (i < keys.size()) {
+			try {
+				newState.setEntry(keys[i], entries[i]);
+			}
+			catch (com.apama.exceptions.Exception e) {
+				log "Failed to set state field "+keys[i].valueToString()+" : "+e.getMessage() at DEBUG;
+			}
+			i := i+1;
+		}
+		
+		return newState;
+	}
+}

@@ -1,0 +1,8 @@
+Tick("msft",-1.64464285714286)
+Tick("msft",-1.26805555555555)
+Tick("ibm",1.09)
+Tick("ibm",1.22)
+Tick("ibm",1.06)
+Tick("ibm",1.1)
+Tick("ibm",-1.09)
+

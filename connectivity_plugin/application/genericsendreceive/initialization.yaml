@@ -1,0 +1,12 @@
+# Correlator configuration file to initialize this application from the command line. 
+correlator:
+   initialization:
+      list:
+         - ${APAMA_HOME}/monitors/ConnectivityPluginsControl.mon
+         - ${APAMA_HOME}/monitors/ConnectivityPlugins.mon
+         - ${PARENT_DIR}/monitors/SendReceiveSample.mon
+         - ${PARENT_DIR}/events/AppReady.evt
+
+# Most connectivity plug-in configurations use this
+includes:
+  - ${APAMA_HOME}/connectivity/bundles/standard-codecs.yaml

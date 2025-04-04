@@ -1,0 +1,1 @@
+Got event A("Hello World") on channel SampleChannel

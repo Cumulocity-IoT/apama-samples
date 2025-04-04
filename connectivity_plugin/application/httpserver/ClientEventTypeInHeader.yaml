@@ -1,0 +1,70 @@
+# Event type in header client connectivity configuration for the HTTPServer sample.
+#
+# $Copyright (c) 2017 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+# Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+
+# Load the HTTPClient
+connectivityPlugins:
+  httpClient:
+    libraryName: connectivity-http-client
+    class: HTTPClient
+  classifierCodec:
+    libraryName: ClassifierCodec
+    class: ClassifierCodec
+  mapperCodec:
+    libraryName: MapperCodec
+    class: MapperCodec
+  jsonCodec:
+    libraryName: connectivity-json-codec
+    class: JSONCodec
+  stringCodec:
+    libraryName: connectivity-string-codec
+    class: StringCodec
+  #diagnosticCodec:
+   # libraryName: DiagnosticCodec
+    #class: DiagnosticCodec
+
+startChains:
+  http:
+    - apama.eventMap
+
+    - mapperCodec:
+        apamax.httpserversample.HTTPRequest:
+          towardsTransport:
+            mapFrom:
+              - metadata.http.path: payload.path
+              - metadata.requestId: payload.id
+              - metadata.http.method: payload.method
+              - payload: payload.data
+            defaultValue:
+              - metadata.contentType: application/json
+              - metadata.http.headers.X-ApamaEventType: apamax.httpserversample.Temperature
+              - metadata.http.headers.x-ApamaChannel: httpServerSample
+        apamax.httpserversample.HTTPResponse:
+          towardsHost:
+            mapFrom:
+              - payload.body: payload
+              - payload.id: metadata.requestId
+              - payload.code: metadata.http.statusCode
+              - payload.message: metadata.http.statusReason
+        apamax.httpserversample.HTTPError:
+          towardsHost:
+            mapFrom:
+              - payload.id: metadata.requestId
+              - payload.code: metadata.http.statusCode
+              - payload.message: metadata.http.statusReason
+    - classifierCodec:
+        rules:
+          - apamax.httpserversample.HTTPResponse:
+            - metadata.http.statusCode: 202
+          - apamax.httpserversample.HTTPError:
+            - metadata.http.statusCode: 
+
+    - jsonCodec:
+        filterOnContentType: true
+    #- diagnosticCodec: { tag: prestring }
+    - stringCodec
+
+    - httpClient:
+        host: localhost
+        port: ${httpServer.port}

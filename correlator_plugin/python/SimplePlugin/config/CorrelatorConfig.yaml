@@ -1,0 +1,4 @@
+eplPlugins:
+  SimplePlugin:
+    pythonFile: "${PARENT_DIR}/../plugins/SimplePlugin.py"
+    class: SimplePluginClass

@@ -1,0 +1,82 @@
+/*
+ * Copyright (c) 2023 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+ */
+
+package com.apamax.epl.functional;
+
+using com.apama.functional.Fn;
+using com.apama.functional.Functional;
+using com.apama.cumulocity.Measurement;
+using com.apama.cumulocity.FindMeasurement;
+using com.apama.cumulocity.FindMeasurementResponse;
+using com.apama.cumulocity.FindMeasurementResponseAck;
+using com.apama.cumulocity.MeasurementFragment;
+using com.apama.cumulocity.Util;
+
+/** Event to trigger the calculation. */
+event CalculateAverage {
+	string source;
+	float start;
+	float end;
+	string fragment;
+	string series;
+	float threshold;
+}
+
+/** This monitor is responsible for calculating the average
+* of Measurement values that are restricted by fragment, series and date,
+* and that are within a given threashold.
+*
+* For the purposes of this sample, calls to Cumulocity are intercepted
+* by listeners in the Simulator monitor.
+*/
+monitor AverageCalc {
+	
+	action onload() {
+		
+		on all CalculateAverage() as ca {
+			calculateAverageWithinThreshold(ca.source, ca.start, ca.end, ca.fragment, ca.series, ca.threshold);
+		}
+	}
+	
+	/**
+	* Based on retrieved measurements from the call to FindMeasurement, this action will create a 
+	* new measurementFragment which will contain a mean value of some of those contained measurement fragments.
+	*
+	* From the responses received, extract the measurements, and measurements dictionary from that, match on the 
+	* required fragment and series types, then extract the value field and restrict them on a 
+	* threshold value and then calculate the mean of those values returned.
+	*/
+	action thresholdAverage(string source, string fragment, string series, float threshold, sequence<FindMeasurementResponse> findMeasurementResponses) {
+		monitor.unsubscribe(FindMeasurementResponse.SUBSCRIBE_CHANNEL);
+		sequence<MeasurementFragment> allMeasurementsFragments := new sequence<MeasurementFragment>;
+
+		// generate a measurementFragment where the thresholdAverageValue is calculated based on retrieved
+		// measurements, restricted on various criteria.
+		send MeasurementFragment("", "thresholdAverage", source, currentTime, "thresholdAverage", "thresholdAverageValue",
+			<float>Functional(findMeasurementResponses)
+				.map(Fn.getEntry("measurement")) // get all measurements from findMeasurementResponses
+				.map(Fn.getEntry("measurements")) // get measurements dictionary from measurement
+				.map(Fn.getEntry(fragment)) // get fragments matching 'c8y_SpeedMeasurement'
+				.map(Fn.getEntry(series)) // get series matching 'speed'
+				.map(Fn.getEntry("value")) // get the 'value of items returned
+				.filter(Fn.partial(Fn.lt, threshold)) // only count those within the threshold
+				.reduce(Fn.mean()), // complute the mean of the values returned.
+			"secs", new dictionary<string, any>) to MeasurementFragment.SEND_CHANNEL;
+	}
+	
+	/** Finds all values for the given fragment/series on the given source within the date range, filters out any out of
+		range and then posts the mean value as a new measurement on that device. */
+	action calculateAverageWithinThreshold(string source, float start, float end, string fragment, string series, float threshold) {
+		integer reqId := Util.generateReqId();
+		sequence<FindMeasurementResponse> fmr;
+
+		monitor.subscribe(FindMeasurementResponse.SUBSCRIBE_CHANNEL);
+		send FindMeasurement(reqId, {"source":source, "dateFrom":start.toString(), "dateTo":end.toString()}) to FindMeasurement.SEND_CHANNEL;
+		Fn.getAllEvents(
+			FindMeasurementResponse.getName(), {"reqId":<any>reqId}, // The event containing the value
+			FindMeasurementResponseAck.getName(), {"reqId":<any>reqId}, // The end/terminating event
+			Fn.partial(thresholdAverage, [source, fragment, series, threshold])); // The onComplete callback
+	}
+}

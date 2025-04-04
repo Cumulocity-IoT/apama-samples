@@ -1,0 +1,35 @@
+/**
+ * An application to demonstrate use of our other Connectivity plugin samples.
+ *
+ * Uses the HTTPClient, JSONCodec, classifier and mapper codecs to monitor the 
+ * status of other Apama components
+ *
+ * $Copyright (c) 2016 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+ */
+
+package apamax.monitoring;
+
+using com.softwareag.connectivity.ConnectivityPlugins;
+
+// public events from MonitoringEvents.mon
+// aggregates from MonitoringAggregates.mon
+// ComponentMonitor class from ComponentMonitor.mon
+
+/** 
+ * Monitor which listens for external requests
+ * then manages the HTTPRequest/Response/Error protocol
+ * to the transport
+ */
+monitor Monitoring
+{
+	/** Initialize the application */
+	action onload()
+	{
+		// start the service monitors
+		ComponentMonitor.init(context("monitor"));
+		// signal that we are ready to receive events
+		ConnectivityPlugins.onApplicationInitialized();
+	}
+}
+

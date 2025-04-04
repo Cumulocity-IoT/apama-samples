@@ -1,0 +1,102 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Apama Correlator CRUD Sample API",
+    "description": "Interface for Apama CRUD sample",
+    "version": "1"
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/create": {
+      "put": {
+        "summary": "Create a new object",
+        "description": "The JSON Payload is stored.",
+        "requestBody": {
+          "description": "Event Fields",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/data"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {"description": "Created OK"}
+        },
+        "x-codegen-request-body-name": "data"
+      }
+    },
+    "/objects/*": {
+      "get": {
+        "summary": "Return the value of an existing object.",
+        "description": "Return the previously stored JSON payload.",
+        "requestBody": {
+          "description": "Event Fields",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/data"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "Created OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/data"
+                }
+              }
+            }
+          },
+          "404": {"description": "Unknown object"}
+        },
+        "x-codegen-request-body-name": "data"
+      },
+      "put": {
+        "summary": "Update an existing object",
+        "description": "The JSON Payload is stored.",
+        "requestBody": {
+          "description": "Event Fields",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/data"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "200": {"description": "Updated OK"},
+          "404": {"description": "Unknown object"}
+        },
+        "x-codegen-request-body-name": "data"
+      },
+      "delete": {
+        "summary": "Update an existing object",
+        "description": "The JSON Payload is stored.",
+        "responses": {
+          "200": {"description": "Deleted OK"},
+          "404": {"description": "Unknown object"}
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "data": {
+        "type": "object"
+      }
+    }
+  }
+}

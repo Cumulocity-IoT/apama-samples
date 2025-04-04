@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="jars" basedir=".">
+
+	<property environment="env"/>
+	<fail unless="env.APAMA_LIBRARY_VERSION" message="Please run the bin/apama_env script before attempting to build this sample."/>
+
+	<property name="apama-home-jar-dir" location="${env.APAMA_HOME}/lib"/>
+	<property name="output-dir" location="${user.dir}"/>
+
+	<macrodef name="build-epl-plugin-jar">
+		<attribute name="jar-name"/>
+		<attribute name="src-include-pattern"/>
+		<sequential>
+			<echo>Building to ${output-dir}</echo>
+			<mkdir dir="${output-dir}/javac-@{jar-name}/"/>
+
+			<javac 
+				srcdir="." 
+				debug="true" 
+				includeantruntime="false" 
+				includes="@{src-include-pattern}" 
+				destdir="${output-dir}/javac-@{jar-name}/" 
+				classpath="${apama-home-jar-dir}/ap-correlator-extension-api.jar"
+			>
+				<compilerarg value="-Xlint"/>
+				<compilerarg value="-Werror"/>
+			</javac>
+
+			<jar jarfile="${output-dir}/@{jar-name}">
+				<fileset dir="${output-dir}/javac-@{jar-name}/"/>
+			</jar>
+		</sequential>
+	</macrodef>
+
+	<target name="jars">
+		<build-epl-plugin-jar jar-name="simple_plugin.jar" src-include-pattern="SimplePlugin*.java"/>
+
+		<build-epl-plugin-jar jar-name="complex_plugin.jar" src-include-pattern="ComplexPlugin*.java"/>
+
+		<build-epl-plugin-jar jar-name="subscribe_plugin.jar" src-include-pattern="SubscribePlugin*.java"/>
+
+		<build-epl-plugin-jar jar-name="send_plugin.jar" src-include-pattern="SendPlugin*.java"/>
+
+	</target>
+</project>

@@ -1,0 +1,32 @@
+event SimpleEvent {
+	integer int;
+}
+
+monitor Simple {
+	float seed := 0.5;
+	integer count := 0;
+	
+	action onload() {
+		SimpleEvent se;
+
+		log "Simple monitor loaded - logged at INFO" at INFO;
+		log "Simple monitor loaded - logged at DEBUG" at DEBUG;
+		
+		on all SimpleEvent(int < 10): se {
+			count := count + 1;
+			log "Received a simple event " + se.toString() at DEBUG;
+			log "Number of events received = " + count.toString() at INFO;
+			processEvent(se);
+		}
+		
+		route SimpleEvent(5);
+	}
+	
+	action processEvent(SimpleEvent se) {
+		integer count := 0;
+		while count < 10000 {
+			count:=count+1;
+		}
+		on wait(seed.rand()/10.0) route SimpleEvent(5);
+	}
+}

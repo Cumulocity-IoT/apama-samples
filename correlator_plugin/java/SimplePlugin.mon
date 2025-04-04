@@ -1,0 +1,29 @@
+//
+// MonitorScript program to test simple example plugin in Java
+//
+// $Copyright(c) 2002, 2009, 2013 Progress Software Corporation (PSC). All rights reserved.$
+// $Copyright (c) 2013,2015, 2022 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+//
+//
+
+monitor SimplePluginTest 
+{
+
+	// Load the plugin
+	import "SimplePlugin" as simple;
+
+	// To hold the return value
+	string ret;
+	string arg;
+
+	action onload() {
+		// Call plugin function
+		arg := "Hello, Simple Plugin";
+		ret := simple.test(arg);
+
+		// Print out return value
+		log "simple.test = " + ret at INFO;
+		log "arg = " + arg at INFO;
+	}
+}

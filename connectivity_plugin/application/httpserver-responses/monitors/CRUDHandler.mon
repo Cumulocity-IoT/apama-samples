@@ -1,0 +1,107 @@
+/*
+ * $Copyright (c) 2018 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+ */
+
+package apamax;
+
+/** Provide a Create Request Update Delete (CRUD) API over HTTP. */
+monitor CRUDHandler 
+{
+	/** The stored data lives here in an any. The keys are the paths to the objects they can be requested on. */
+	dictionary<string, any> datastore := new dictionary<string, any>;
+	
+	/** Initialize all the listeners and then start receiving events. */
+	action onload()
+	{
+		log "Starting CRUD handler" at INFO;
+		monitor.subscribe("requests");
+		startCreateHandler();
+		startUpdateHandler();
+		startReadHandler();
+		startDeleteHandler();	
+		com.softwareag.connectivity.ConnectivityPlugins.onApplicationInitialized();
+	}
+	/** Listen for AddObject events. */
+	action startCreateHandler()
+	{
+		/* On each CreateObject event, create a new ID for it, add it to the map and then return Success. */
+		on all CreateObject() as co {
+			try {
+				integer newKey := integer.incrementCounter("apamax.crud.objects");
+				string path := "/objects/"+newKey.toString();
+				
+				datastore.add(path, co.data);
+				log "Added new object with path "+path+" and value "+co.data.valueToString() at INFO;
+				
+				send Success(co.requestId, path, "Successfully added new object at "+path+" by "+co.source) to co.channel;
+			} catch (com.apama.exceptions.Exception e) {
+				send Error(co.requestId, 500, "Error handling create: "+e.getMessage()) to co.channel;
+			}	
+		}
+	}
+	/** Listen for UpdateObject events. */
+	action startUpdateHandler()
+	{
+		/* On each UpdateObject event, check we have that ID in the database and then update the data. If not, return Error. */
+		on all UpdateObject() as uo {
+			try {
+				// existing objects
+				if datastore.hasKey(uo.path) {
+					datastore.add(uo.path, uo.data);
+					log "Updated object at "+uo.path at INFO;
+					send Success(uo.requestId, uo.path, "Successfully updated object at "+uo.path+" by "+uo.source) to uo.channel;
+				} 
+				
+				// unknown objects
+				else {
+					send Error(uo.requestId, 404, "No object at "+uo.path) to uo.channel;
+				}
+			} catch (com.apama.exceptions.Exception e) {
+				send Error(uo.requestId, 500, "Error handling update: "+e.getMessage()) to uo.channel;
+			}	
+		}
+	}
+	/** Listen for GetObject events. */
+	action startReadHandler()
+	{
+		/* On each ReadObject event, return the appropriate value if we have it, otherwise return Error. */
+		on all ReadObject() as ro {
+			try {
+				// we have the object, return it
+				if datastore.hasKey(ro.path) {
+					send Object(ro.requestId, datastore[ro.path]) to ro.channel;
+				} 
+				
+				// we don't have the object, send an error
+				else {
+					send Error(ro.requestId, 404, "No object at "+ro.path) to ro.channel;
+				}
+			} catch (com.apama.exceptions.Exception e) {
+				send Error(ro.requestId, 500, "Error handling get: "+e.getMessage()) to ro.channel;
+			}			
+		}
+	}
+	/** Listen for DeleteObject events */
+	action startDeleteHandler()
+	{
+		/* On each DeleteObject event, if we have it, delete it. Otherwise return Error. */
+		on all DeleteObject() as do {
+			try {
+				// we have it, so delete it
+				if datastore.hasKey(do.path) {
+					datastore.remove(do.path);
+					log "Deleted object at "+do.path at INFO;
+					send Success(do.requestId, "/", "Successfully deleted object at "+do.path+" by "+do.source) to do.channel;
+				} 
+				
+				// We don't have it, send an error
+				else {
+					send Error(do.requestId, 404, "No object at "+do.path) to do.channel;
+				}
+			} catch (com.apama.exceptions.Exception e) {
+				send Error(do.requestId, 500, "Error handling delete: "+e.getMessage()) to do.channel;
+			}
+		}
+	}
+}

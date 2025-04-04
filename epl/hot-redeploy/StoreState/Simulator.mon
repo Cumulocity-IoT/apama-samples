@@ -1,0 +1,24 @@
+/**
+ * Input event simulator monitor.  Send Process event every second with a random field.
+ *
+ * $Copyright (c) 2017 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+ */
+package com.apama.sample.redeploy;
+
+monitor Simulator {
+	
+	action onload() {
+
+		// Start simulation when event received
+		on all StartSimulator() {
+			// Send event every second until stop event
+			on all wait(1.0) and not StopSimulator() {
+				send Process((1.0d).rand()) to "DATA";
+			}
+		}
+		
+		// Auto-start the simulator when injected
+		route StartSimulator();
+	}
+}

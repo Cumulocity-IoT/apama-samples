@@ -1,0 +1,6 @@
+metadata={"contentType":"application/json","sag.channel":"jsonChain","sag.type":"apamax.connectivitysample.SpecialOffers"}
+payload_string={"offers":[{"price":12.2,"item":"Wine"}],"userId":"jb"}
+
+metadata={"contentType":"application/json","sag.channel":"jsonChain","sag.type":"apamax.connectivitysample.SpecialOffers"}
+payload_string={"offers":[{"price":10.1,"item":"Wine"},{"price":3.0,"item":"Book"}],"userId":"mj"}
+

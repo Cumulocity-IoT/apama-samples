@@ -1,0 +1,45 @@
+/**
+ * Aggregate for MonitoringApp sample
+ *
+ * Uses the HTTPClient, JSONCodec, classifier and mapper codecs to monitor the 
+ * status of other Apama components
+ *
+ * $Copyright (c) 2016 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+ */
+
+package apamax.monitoring;
+
+
+/** Aggregate that calculates the average event rate over a window */
+aggregate rate(float f) returns float
+{
+	sequence<float> data;
+	float last;
+	action init()
+	{
+		last := 0.0;
+		data := new sequence<float>;
+	}
+	action add(float f)
+	{
+		data.append(f-last);
+		last := f;
+	}
+	action remove(float f)
+	{
+		data.remove(0);
+	}
+	action value() returns float
+	{
+		integer i := 0;
+		float sum := 0.0;
+		while (i < data.size()) {
+			sum := sum + data[i];
+			i := i + 1;
+		}
+		return sum / data.size().toFloat();
+	}
+}
+
+

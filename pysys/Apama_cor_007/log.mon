@@ -1,0 +1,14 @@
+event ForwardEvent {
+	string source;
+	string message;
+}
+
+monitor LogMonitor {
+	ForwardEvent fe;
+
+	action onload() {
+		on all ForwardEvent():fe {
+			log "Received ForwardEvent, " + fe.toString() at INFO;
+		}
+	}
+}

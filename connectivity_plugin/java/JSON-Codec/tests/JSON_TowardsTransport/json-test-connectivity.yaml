@@ -1,0 +1,29 @@
+# $Copyright(c) 2016-2017 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+# Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+
+connectivityPlugins:
+  unitTestHarness:
+    classpath: ${APAMA_HOME}/lib/connectivity-unit-test-harness.jar
+    class: com.softwareag.connectivity.testplugins.UnitTestHarness
+  nullTransport:
+    classpath: ${APAMA_HOME}/lib/connectivity-unit-test-harness.jar
+    class: com.softwareag.connectivity.testplugins.NullTransport
+   
+startChains:
+  MyTestChain:
+    - apama.eventMap
+    # this is a unit test so the host is not used
+
+    - unitTestHarness:
+        pluginUnderTest: towardsTransport
+        readFrom: ${TEST_INPUT_DIR}/input-towards-host.txt
+
+    - jsonCodec
+    # no configuration required
+
+    - unitTestHarness:
+        pluginUnderTest: towardsHost
+        writeTo: output-towards-transport.txt
+        
+    - nullTransport
+    # this is a codec unit test so no transport functionality is required

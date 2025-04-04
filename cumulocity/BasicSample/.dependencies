@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<apama-project>
+	<dependency>
+		<dependencyentry path="" kind="src"/>
+	</dependency>
+	<catalogs>
+	</catalogs>
+	<bundles>
+		<bundle file="CumulocityNotifications2Connectivity.bnd" origin-path="" origin="CONNECTIVITY_CATALOG">
+			<config-files>
+			</config-files>
+			<bundle-instance-files>
+				<file name="../bundles/CumulocityNotifications2Connectivity/CumulocityNotifications2.properties" timestamp="1717061694472"/>
+			</bundle-instance-files>
+			<static-files>
+			</static-files>
+			<dashboard-files>
+			</dashboard-files>
+			<evt-files>
+			</evt-files>
+		</bundle>
+		<bundle file="AutomaticOnApplicationInitialized.bnd" origin-path="" origin="PRODUCT_CATALOG">
+			<instance name=""/>
+			<config-files>
+			</config-files>
+			<bundle-instance-files>
+			</bundle-instance-files>
+			<static-files>
+			</static-files>
+			<dashboard-files>
+			</dashboard-files>
+			<evt-files>
+				<file name="${APAMA_HOME}/monitors/AutomaticOnApplicationInitialized.evt" timestamp="1717061675133"/>
+			</evt-files>
+		</bundle>
+	</bundles>
+</apama-project>

@@ -1,0 +1,19 @@
+event TestEvent {
+	string message;
+}
+
+event ForwardEvent {
+	string source;
+	string message;
+}
+
+monitor Forward {
+	string CHANNEL := "TestChannel";
+	TestEvent te;
+
+	action onload() {
+		on all TestEvent():te {
+			send ForwardEvent("Source correlator", te.message) to CHANNEL;
+		}
+	}
+}

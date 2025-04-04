@@ -1,0 +1,121 @@
+package com.apama.samples.dos;
+
+/**
+ * Simulates detection of a denial of service attack from one or more hosts
+ * through detection of high densities of 'Ping' events. Detects 10 or more
+ * Ping events in any one second period and sends an alert. Thereafter counts
+ * the number of pings from that host and sends an alert every second with the
+ * number of Pings received, until the number of Pings fall below 10.
+ *
+ * This example demonstrates the use of dictionaries to record state, the 
+ * 'route' command to add an event to the input stream as a means of
+ * communicating with other monitors, and a pattern for implementing a global
+ * clock ticker
+ *
+ * $Copyright(c) 2002 - 2006, 2010 Progress Software Corporation. All Rights Reserved.$ 
+ * $Copyright (c) 2013-2015 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+ */
+
+/**	
+ * Event which simulates a Ping request
+ *
+ * source : the source address of the requestor
+ */
+event Ping {
+	string source;
+}
+	
+/**
+ * Event sent to alert to a possible Denial of Service attack
+ *
+ * source : the source address of the attacker
+ * count  : the number of ping requests received from the source in the
+ *          last one second
+ */
+event PingAlert {
+	string source;
+	integer count;
+}
+
+/**
+ * The DOS monitor
+ */
+monitor DenialOfService {
+
+	/**
+	 * Event generated internally to signal a source has stopped pinging
+	 *
+	 * source : the source address in question
+	 */
+	event NoPing {
+		string source;
+	}
+	
+	/**
+	 * Dictionary holds addresses of all sources currently sending ping
+	 * requests
+	 */
+	dictionary<string,integer> pingers;
+	
+	
+	// other local variables
+
+	float interval := 1.0;
+	Ping ping;
+	NoPing noping;
+	PingAlert pingAlert;
+	integer maxPings := 10;
+	
+	/**
+	 * onload action spawns Monitors to watch specific hosts when they send
+	 * a ping request, and removes them from the watch list when they stop
+	 * pinging.
+	 */
+	action onload() {
+		pingAlert.count := 1;
+		
+		on all Ping(*):ping {
+			if (not pingers.hasKey(ping.source)) {
+				pingers.add(ping.source, 1);
+				pingAlert.source := ping.source;
+				spawn PingChecker();
+			}
+		}
+		
+		on all NoPing(*):noping {
+			if (pingers.hasKey(noping.source)) {
+				pingers.remove(noping.source);
+			}
+		}
+	}
+	
+	/**
+	 * keep a count of number of pings in any one second period from a specific
+	 * host and send an alert if the number exceeds 10
+	 */
+	action PingChecker() {
+		on all Ping(ping.source) {
+			pingAlert.count := pingAlert.count + 1;
+		}
+		
+		on all wait(1.0) {
+			if (pingAlert.count > maxPings) {
+				send pingAlert to "output";
+			}
+			
+			// if no ping from host in a clock interval then stop watching it
+			
+			else if (pingAlert.count = 0) {
+				route NoPing(ping.source);
+				die;
+			}
+			pingAlert.count := 0;
+		}
+	}
+}
+		
+
+
+
+

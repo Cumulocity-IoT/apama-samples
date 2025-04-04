@@ -1,0 +1,211 @@
+// $Copyright(c) 2009 Progress Software Corporation. All Rights Reserved.$ 
+// $Copyright (c) 2013-2016 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+/**
+ * This sample attempts to implement a bank with a Bank DB (Database) responding to lock, unlock, set and get
+ * requests keyed by account name.  It suffers from a deadlock condition; if a teller locks accounts A and then B, 
+ * and a second teller locks B and A, then the system can deadlock.
+ */
+
+/**
+ * Sent from a teller to the bank database
+ */
+event Get {
+	integer id;
+	string account;	
+	context caller;
+}
+
+event GetResponse {
+	integer id;
+	float amt;
+}
+
+/**
+ * Sent from a teller to the bank database
+ */
+event Set {
+	integer id;
+	string account;
+	float amt;
+	context caller;
+}
+
+event SetResponse {
+	integer id;
+}
+
+/**
+ * Sent from a teller to the bank database
+ */
+event Lock {
+	integer id;
+	string account;	
+	string teller;
+	context caller;
+}
+
+event LockResponse {
+	integer id;
+}
+
+/**
+ * Sent from a teller to the bank database
+ */
+event Unlock {
+	integer id;
+	string account;	
+	string teller;
+	context caller;
+}
+
+event UnlockResponse {
+	integer id;
+}
+
+
+
+/**
+ * Singleton that holds all the data. Should only interact with tellers, not customers
+ */
+monitor BankDB {
+	dictionary<string, float> accounts;
+	// account to a list of pending lock requests (no entry means the
+	//  account is unlocked, an empty sequence means no contention)
+	dictionary<string, sequence<Lock> > lockedAccounts; 
+	action onload() {
+		spawn server() to context("BankDB");
+	}
+
+	action server() {
+		monitor.subscribe(DB.channel);
+		on all SetupAccount() as setup {
+			if accounts.hasKey(setup.account) {
+				log "Error - ignoring second attempt to create account "+setup.toString() at ERROR;
+			} else {
+				accounts.add(setup.account, setup.amt);
+			}
+		}
+
+		on all Get() as get {
+			if accounts.hasKey(get.account) {
+				send GetResponse(get.id, accounts[get.account]) to get.caller;
+			}
+		}
+
+		on all Set() as set {
+			if accounts.hasKey(set.account) {
+				accounts[set.account]:=set.amt;
+			}
+			send SetResponse(set.id) to set.caller;
+		}
+
+		on all SendBalances() {
+			log accounts.toString() at INFO;
+			send Accounts(accounts) to "output";
+		}
+
+		on all Lock() as lock {
+			string act:=lock.account;
+			if lockedAccounts.hasKey(act) {
+				// add our req ID to the queue pending for this account
+				lockedAccounts[act].append(lock);
+				log lock.teller +" is waiting to lock "+act at INFO;
+			} else {
+				lockedAccounts.add(act, new sequence<Lock>);
+				log lock.teller +" has locked "+act at INFO;
+				send LockResponse(lock.id) to lock.caller;
+			}
+		}
+
+		on all Unlock() as unlock {
+			string act:=unlock.account;
+			if lockedAccounts.hasKey(act) {
+				log unlock.teller +" has unlocked "+act at INFO;
+				send UnlockResponse(unlock.id) to unlock.caller;
+				if lockedAccounts[act].size()>0 {
+					Lock lock:=lockedAccounts[act][0];
+					lockedAccounts[act].remove(0);
+					log lock.teller +" is waiting to lock "+act at INFO;
+					send LockResponse(lock.id) to lock.caller;
+				} else {
+					lockedAccounts.remove(act);
+				}
+			} else {
+				log "Error: attempt to unlock a locked account." at ERROR;
+			}
+		}
+	}
+}
+
+
+/** 
+ * A bank teller (of which there are many) who can transfer money from one 
+ * account to another by communicating with the bank's database
+ */
+monitor BankTeller {
+	string db:=DB.channel;
+	RaceExposer races;
+	action onload() {
+		sequence<string> tellers := ["teller1", "teller2"];
+		string teller;
+		for teller in tellers {
+			spawn tellerJob(teller) to context(teller);
+		}
+	}
+
+	action tellerJob(string teller) {
+		monitor.subscribe(teller);
+		races.init();
+		on all TransferMoney(teller=teller) as transferMoney {
+
+			integer lockFromId:=integer.getUnique();
+			send Lock(lockFromId, transferMoney.fromAccount, teller, context.current()) to db;
+			
+			races.spinSleep(teller, "teller1", 2.0);
+			races.spinSleep(teller, "teller2", 2.0);
+
+			integer lockToId:=integer.getUnique();
+			send Lock(lockToId, transferMoney.toAccount, teller, context.current()) to db;
+
+			on LockResponse(id=lockFromId) and LockResponse(id=lockToId) {
+
+				integer getFromId:=integer.getUnique();
+				send Get(getFromId, transferMoney.fromAccount, context.current()) to db;
+
+				integer getToId:=integer.getUnique();
+				send Get(getToId, transferMoney.toAccount, context.current()) to db;
+
+				on GetResponse(id=getFromId) as actFrom and GetResponse(id=getToId) as actTo {
+					float toAmt:=actTo.amt;
+					float fromAmt:=actFrom.amt;
+
+					toAmt:=toAmt + transferMoney.amt;
+					fromAmt:=fromAmt - transferMoney.amt;
+
+					integer setFromId:=integer.getUnique();
+					send Set(setFromId, transferMoney.fromAccount, fromAmt, context.current()) to db;
+
+					integer setToId:=integer.getUnique();
+					send Set(setToId, transferMoney.toAccount, toAmt, context.current()) to db;
+
+				
+					on SetResponse(id=setFromId) and SetResponse(id=setToId) {
+						log teller+" has transferred "+transferMoney.amt.toString()+", balances are "+transferMoney.fromAccount+":"+fromAmt.toString()+", "+transferMoney.toAccount+":"+toAmt.toString() at INFO;
+					
+						integer unlockFromId:=integer.getUnique();
+						send Unlock(unlockFromId, transferMoney.fromAccount, teller, context.current()) to db;
+
+						integer unlockToId:=integer.getUnique();
+						send Unlock(unlockToId, transferMoney.toAccount, teller, context.current()) to db;
+
+						on UnlockResponse(id=unlockFromId) and UnlockResponse(id=unlockToId) {
+
+							send TransferMoneyComplete(transferMoney.fromAccount, transferMoney.toAccount, transferMoney.amt) to "output";
+						}
+					}
+				}
+			}
+		}
+	}
+}

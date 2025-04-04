@@ -1,0 +1,164 @@
+package com.apama.samples.vwap;
+/**
+ * Computes Volume Weighted Average Price (VWAP) data for a given stock over a
+ * given duration, generating alerts if consecutive VWAPs show a change of more
+ * than a given percentage. New stocks to watch are signalled by 'VwapWatch' 
+ * events. Stock trades are signalled by 'StockTrade' events.
+ *
+ * This example demonstrates the wait operator coupled with computation on
+ * event matching.  For simplification, it only allows one VWAP comparison to
+ * be active for the same stock at any one time.
+ *
+ * $Copyright(c) 2002 - 2006, 2009-2010 Progress Software Corporation. All Rights Reserved.$ 
+ * $Copyright (c) 2013-2015 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+ */
+
+/**
+ * event which adds/removes stocks to/from the watch list
+ *
+ * stockName     : the stock symbol to compute VWAPs for
+ * period        : the period over which to compute VWAPs (in seconds)
+ * percentChange : the percentage change between consecutive VWAPs which
+ *                 causes an alert to be sent (1.0 == 100%)
+ */
+event VwapWatch 
+{
+	string stockName;
+	float period;
+	float percentChange;
+}
+
+/**
+ * event which signals a stock trade
+ *
+ * stockName : the stock symbol of the traded stock
+ * price     : the price at which the stock was traded
+ * volume    : the quantity of the stock traded
+ */
+event Trade 
+{
+	string stockName;
+	float price;
+	float volume;
+}
+
+/**
+ * event for sending matches
+ *
+ * stockName     : the name of the stock
+ * period        : the period over which the VWAPs were calculated
+ * percentChange : the actual percentage change
+ * vwap1         : the first VWAP calculated
+ * vwap2         : the second VWAP calculated
+ */
+event Match 
+{
+	string stockName;
+	float period;
+	float percentChange;
+	float vwap1;
+	float vwap2;
+}
+
+/**
+ * the monitor
+ */
+monitor Vwap 
+{
+	// local variables
+	
+	Trade trade;
+	VwapWatch watch;
+	float cumulativePV := 0.0;
+	float cumulativeV := 0.0;
+	float lastVwap := -1.0;
+	float newVwap := 0.0;
+	float change;
+	
+	/**
+	 * On load set up a listener to watch for all VwapWatch events which signify 
+	 * a new stock watcher should be set up - i.e. CwapWatch events where the 
+	 * period is >0 - when these events occur, spawn a monitor to watch for 
+	 * trades in the indicated stock
+	 */
+	action onload()
+	{
+		on all VwapWatch(*, >0.0, *):watch spawn CalculateVwap();
+	}
+	
+	/**
+	 * Watches for stock trade events and keeps track of Cumulative Price/Volume
+	 * and Cumulative Volume information. Also sets up a wait to tick at 
+	 * regular intervals, at which the VWAP will be calculated and compared to
+	 * the previous VWAP for magnitude of change			
+	 */
+	action CalculateVwap()
+	{
+		// calculate cumulative price/volume information with each trade
+		
+		on all Trade(watch.stockName, *, *):trade {
+			cumulativePV := cumulativePV + (trade.price * trade.volume);
+			cumulativeV :=  cumulativeV + trade.volume;
+		}
+
+		on VwapWatch(watch.stockName, *, *) die;
+
+		doPeriod();
+	}
+
+	/**
+	 * Compute vwap for period with each period and check for percent
+	 * change greater than limit
+	 */
+	action doPeriod()
+	{	
+		on all wait(watch.period) {
+			if (cumulativeV = 0.0) {
+				newVwap := 0.0;
+			}
+			else {
+				newVwap := cumulativePV / cumulativeV;
+			}
+			
+			if (newVwap > 0.0) {
+				if (lastVwap > 0.0) {
+					change := (lastVwap - newVwap) / lastVwap;
+
+					if (change < 0.0) {
+						change := -1.0 * change;
+					}
+					if (change >= watch.percentChange) {
+						send Match(
+							watch.stockName,
+							watch.period,
+							roundValue(change),
+							roundValue(lastVwap),
+							roundValue(newVwap)) to "output";
+					}
+				}
+				
+				lastVwap := newVwap;
+			}
+					
+			// reset variables
+							
+			cumulativeV := 0.0;
+			cumulativePV := 0.0;
+		}
+	}
+	
+	action roundValue(float v) returns float
+	{
+		return (v*100.0).floor().toFloat()/100.0;
+	}
+}
+		
+			
+
+
+
+
+
+
+

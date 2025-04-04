@@ -1,0 +1,5 @@
+Alert("msft",16010)
+Alert("ibm",18558)
+Alert("msft",30398.6)
+Alert("msft",46064.6)
+Alert("ibm",29355)

@@ -1,0 +1,114 @@
+/**
+ * Class for monitoring components (and internal events). Used by
+ * MonitoringApp.mon
+ *
+ * $Copyright (c) 2016-2017, 2020 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+ */
+
+package apamax.monitoring;
+
+using com.apama.aggregates.mean;
+using com.apama.aggregates.last;
+using com.softwareag.connectivity.ConnectivityPlugins;
+using com.softwareag.connectivity.Chain;
+
+/** Internal event used during processing */
+event CorrelatorAggregateStatus
+{
+	string name;
+	float rx;
+	float tx;
+	float qsize;
+	float vm;
+	float meanqsize;
+	float rxrate;
+	float txrate;
+}
+	
+/** Class to monitor a component */
+event ComponentMonitor
+{
+	/** Setup forwarders and spawn the component monitor to its own context */
+	static action init(context c)
+	{
+		on all MonitorComponent() as m {
+			send m to c;
+		}
+		spawn run() to c;
+	}
+
+	/** Run the monitor */
+	static action run()
+	{
+		// subscribe to responses from the connectivity chain
+		// handle requests to start monitoring a component, 
+		// each in its own context
+		on all MonitorComponent() as m
+		{
+			spawn startMonitoring(m) to context(m.name);
+		}
+	}
+	/** Start monitoring a component */
+	static action startMonitoring(MonitorComponent m)
+	{
+		// create the HTTPClient chain for our host/port
+		string channel := "http"+m.name;
+		string return_channel := "response"+m.name;
+		monitor.subscribe(return_channel);
+		sequence<string> channels := [channel];
+		dictionary<string, string> subs := { "HOST":m.host, "PORT":m.port.toString()};
+		Chain chain := ConnectivityPlugins.createDynamicChain(m.name, channels, m.type, subs, return_channel);
+
+		// request an update every second
+		on all wait(1.0) {
+
+			// send the request for our location
+			if (m.type = "correlator") {
+				send RequestStatus(m.name, "/correlator/status") to channel;
+			} else if (m.type = "component") {
+				send RequestStatus(m.name, "/info") to channel;
+			} else {
+				log "Unknown component type "+m.type+". Valid types are correlator or component. Ignoring request to monitor "+m.name at WARN;
+			}
+		}
+
+		// handle error responses
+		on all StatusError(name=m.name) as err {
+			print "WARNING component "+m.name+" may be down: "+err.message;
+			log "ComponentError ["+m.name+"]: "+err.message at WARN;
+			emit ComponentDownWarning(m.name);
+		}
+
+		// handler if it's a correlator
+		from status in all CorrelatorStatus(name=m.name) 
+			within 20.0
+			select CorrelatorAggregateStatus(m.name, 
+					last(status.rx), last(status.tx), last(status.qsize), last(status.vm),
+					mean(status.qsize), rate(status.rx), rate(status.tx)) as cas {
+			print "Status for "+cas.name+
+				" rx="+cas.rx.toString()+" ("+cas.rxrate.toString()+"/s)"+
+				" tx="+cas.tx.toString()+" ("+cas.txrate.toString()+"/s)"+
+				" qsize="+cas.qsize.toString()+" ("+cas.meanqsize.toString()+")"+
+				" vm="+cas.vm.toString();
+			if (cas.meanqsize > 9000.0) {
+				print "WARNING: queue for "+cas.name+" is over 9000";
+				emit QueueSizeWarning(cas.name, cas.meanqsize, cas.qsize);
+			}
+		}
+
+		// handler if it's another component type
+		on all GenericComponentStatus(name=m.name) as gcs {
+			print "Status for "+gcs.name+
+				" vm="+gcs.vm.toString();
+		}
+
+		// delete all the listeners and the chain for connecting to the component
+		// then destroy the monitor instance
+		on StopMonitor(host=m.host, port=m.port) {
+			chain.destroy();
+			die; // kill the monitor instance and stop all its listeners
+		}
+	}
+}
+

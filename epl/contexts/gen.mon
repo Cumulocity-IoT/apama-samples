@@ -1,0 +1,34 @@
+/*
+ * $Copyright(c) 2009 Progress Software Corporation (PSC). All rights reserved.$
+ * $Copyright (c) 2013-2016 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+ */
+package com.apamat.marketdata;
+
+monitor generator {
+	action onload() {
+		on Generate() as g {
+			send g to "";
+			dictionary<string, float> prices:=new dictionary<string,float>;
+			string symbol;
+			for symbol in g.symbols {
+				prices.add(symbol, 75.0+50.0.rand());
+			}
+			integer i:=0;
+			while(i<g.numberPoints) {
+				i:=i+1;
+				for symbol in g.symbols {
+					Tick t:=new Tick;
+					t.symbol:=symbol;
+					t.qty:=750+(500.0.rand().ceil());
+					t.price:=prices[symbol]-1.0+2.0.rand();
+					prices[symbol]:=t.price;
+					send t to symbol;
+				}
+			}
+		}
+		on Finished() {
+			send Finished() to "Control";
+		}
+	}
+}

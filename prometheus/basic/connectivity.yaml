@@ -1,0 +1,18 @@
+# Sample connectivity configuration for the Prometheus SampleTransport
+#
+# $Copyright (c) 2018 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+# Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+
+# Load our sample transport
+# This transport only demonstrates how to create a Prometheus exposable metric within a Connectivity Plug-in
+connectivityPlugins:
+  sampleTransport:
+    directory: ${PARENT_DIR}/Release
+    libraryName: PrometheusSample
+    class: SampleTransport
+
+# Create our simple chain for communicating with the Sample Transport
+startChains:
+  myChain:
+    - apama.eventMap
+    - sampleTransport

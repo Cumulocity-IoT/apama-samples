@@ -1,0 +1,4 @@
+contextB received Simple: Simple("Simple event sent from EventsPlugin")
+contextB received Complex: Complex(4,5.43,false,"Complex event sent from EventsPlugin")
+EventsPlugin [1] Done.
+<plugins.EventsPlugin> EventPlugin received event Done on channel channelPlugin.

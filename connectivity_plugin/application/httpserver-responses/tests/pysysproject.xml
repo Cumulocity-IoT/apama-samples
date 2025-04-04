@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pysysproject>
+	<requires-pysys>2.1</requires-pysys>
+	<requires-python>3.9</requires-python>
+
+	<!-- Pre-defined properties include: ${testRootDir}, ${outDirName}, ${os}, ${osfamily}, ${startDate}, ${startTime}, 
+		${hostname}, ${username}, ${/}, ${eval:*}, ${env:*}. 
+	-->
+	
+	<!-- Use this property for the home directory of the application being tested. If your project needs building, this 
+	should be the build/deployment output directory. 
+	
+	You can refer to it in your tests like this: self.project.appHome+'/monitors/XXX.mon'
+	
+	It can be overridden with an environment variable if desired. 
+	-->
+	<property name="appHome" value="${env.PYSYS_APP_HOME}" default="${testRootDir}/.." pathMustExist="true"/>
+
+	<!-- Add user-defined properties here (use lowerCamelCase for property names) -->
+
+	<!-- Import OS-specific ${...} properties from pysys-windows.properties or pysys-unix.properties file if it exists. -->
+	<property file="pysys-${osfamily}.properties" pathMustExist="false"/>
+
+	<!-- Custom test framework plugins, if needed -->
+	<!--
+	<pythonpath value="./pysys-extensions" />
+	<runner-plugin classname="myorg.plugins.MyRunnerPlugin" alias="myorg"/>
+	-->
+
+	<!-- Apama install location and plugin -->
+	<property name="APAMA_HOME"         value="${env.APAMA_HOME}" pathMustExist="true"/>
+	<property name="APAMA_WORK"         value="${env.APAMA_WORK}" default=""/>
+	
+	<writers>
+		<writer classname="apama.coverage.EPLCoverageWriter">
+			<!-- See EPLCoverageWriter API documentation for details on these and other available configuration parameters. -->
+			<property name="destDir" value="__coverage_epl.${outDirName}"/>
+			
+
+			<!-- Path(s) to search for .mon source files that we may be testing -->
+			<property name="srcSearchDirs" value="${appHome}"/>
+
+			<!-- Comma-separated list of exclude patterns where there is no EPL source we want to measure coverage, 
+				or potentially large directories such as build output 
+			-->
+			<property name="srcExcludes" value="${appHome}/output*/**, ${appHome}/build*/**, ${testRootDir}/**"/>
+
+			<property name="srcIncludes" value=""/>
+		</writer>
+
+		<writer classname="pysys.writer.testoutput.TestOutputArchiveWriter">
+			<property name="destDir" value="__pysys_output_archives/"/>
+			<property name="maxTotalSizeMB" value="1024.0"/>
+		</writer>
+		
+		<writer classname="pysys.writer.outcomes.JUnitXMLResultsWriter">
+			<property name="outputDir" value="__pysys_junit_xml"/>
+		</writer>
+		
+		<writer classname="pysys.writer.ci.GitHubActionsCIWriter"></writer>
+		<writer classname="pysys.writer.ci.TravisCIWriter"></writer>
+		
+		<writer classname="pysys.writer.console.ConsoleSummaryResultsWriter"></writer>
+	</writers>
+
+	<default-file-encodings>
+		<default-file-encoding pattern="run.log" encoding="utf-8"/>
+		
+		<default-file-encoding pattern="*.xml"  encoding="utf-8"/>
+		<default-file-encoding pattern="*.json" encoding="utf-8"/>
+		<default-file-encoding pattern="*.yaml" encoding="utf-8"/>
+		
+		<default-file-encoding pattern="*.log" encoding="utf-8"/>
+	</default-file-encodings>	
+	
+	<pysysdirconfig>
+		<maker-template name="apama-default-test" 
+			description="a test for an Apama application that runs in a local correlator" 
+			copy="${pysysTemplatesDir}/apama-default-test/*" 
+		/>
+		
+		<!-- Store input files alongside pysystest.py in the test directories (instead of a separate testDir/Input/ dir) -->
+		<input-dir>.</input-dir>
+	</pysysdirconfig>
+	
+	<!-- Add project-specific text to be appended to the "pysys run -h". -->
+	<project-help>
+	</project-help>
+</pysysproject>

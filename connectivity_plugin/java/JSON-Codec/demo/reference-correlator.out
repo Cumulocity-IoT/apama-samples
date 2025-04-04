@@ -1,0 +1,5 @@
+apamax.connectivitysample.ExampleStore [1] Received apamax.connectivitysample.CustomerLoggedIn("ab","Alfred Brendel",1)
+apamax.connectivitysample.ExampleStore [1] Received apamax.connectivitysample.CustomerLoggedIn("jb","James Brown",2)
+apamax.connectivitysample.ExampleStore [1] Sending special offer to James Brown
+apamax.connectivitysample.ExampleStore [1] Received apamax.connectivitysample.CustomerLoggedIn("mj","Michael Jackson",5)
+apamax.connectivitysample.ExampleStore [1] Sending special offer to Michael Jackson

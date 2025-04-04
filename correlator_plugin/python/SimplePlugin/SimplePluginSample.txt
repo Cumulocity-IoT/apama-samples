@@ -1,0 +1,1 @@
+apama.test.SimplePLugin [1] UUID generated: 4c132b6d-1417-4c75-8826-6137ed6c88c7

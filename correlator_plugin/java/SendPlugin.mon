@@ -1,0 +1,63 @@
+//
+// MonitorScript program to test send example plugin in Java
+//
+// $Copyright(c) 2013 Progress Software Corporation (PSC). All rights reserved.$
+// $Copyright (c) 2013-2016, 2022 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+//
+//
+
+event A {
+	string str;
+}
+
+monitor SendPluginTest 
+{
+
+	// Load the plugin
+	import "SendPlugin" as send_plugin;
+
+	action onload() {
+		context c1 := context("receiver");
+		context c2 := context("receiver2");
+		context c3 := context("sender1");
+		context c4 := context("sender2");
+		spawn receiver() to c1; // listen for events
+		spawn sendto(c1) to c3; // this will work
+		spawn sendto(c4) to c4; // this won't work because both contexts are the same
+		spawn channelReceiver("SampleChannel") to c2; // listen for events
+	}
+
+	action channelReceiver(string chan)
+	{
+		monitor.subscribe(chan);
+		on all A() as a {
+			print "channel receiver got: "+a.toString();
+		}
+		context c5 := context("sender3");
+		spawn sendtoChannel("SampleChannel") to c5;
+	}
+
+	action sendtoChannel(string chan)
+	{
+		on all A() {
+			print "sender really shouldn't get anything!";
+		}
+		send_plugin.sendEventToChannel(A("Hello, World").toString(), chan);
+	}
+
+	action receiver()
+	{
+		on all A() as a {
+			print "context receiver got: "+a.toString();
+		}
+	}
+
+	action sendto(context c)
+	{
+		on all A() {
+			print "sender really shouldn't get anything!";
+		}
+		send_plugin.sendEventTo(A("Hello, World").toString(), c);
+	}
+}

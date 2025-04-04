@@ -1,0 +1,27 @@
+metadata={"aim":"Top-level JSON document is a primitive integer","contentType":"application/json"}
+payload_string=42
+
+metadata={"aim":"Top-level JSON document is a primitive string","contentType":"application/json"}
+payload_string="Forty-two"
+
+metadata={"aim":"Top-level JSON document is a list","contentType":"application/json"}
+payload_string=[1,2,3]
+
+metadata={"aim":"Top-level JSON document is a map","contentType":"application/json"}
+payload_string={"one":1,"two":2}
+
+metadata={"aim":"Document is a map. An exciting map","contentType":"application/json"}
+payload_string={"list":[1,2,3],"emptymap":{},"othermap":{"1":"one","two":2},"null":null}
+
+metadata={"aim":"Document contains an escaped string","contentType":"application/json"}
+payload_string={"key1":"Not quoted","key2":"This is a quote symbol --> \" <--"}
+
+metadata={"aim":"Metadata is preserved","contentType":"application/json","key1":"value1","key2":"value2"}
+payload_string={"four":4,"three":3}
+
+metadata={"aim":"Metadata is preserved with null payload","key1":"value1","key2":"value2"}
+payload_json=null
+
+metadata={"aim":"final message"}
+payload_json=null
+

@@ -1,0 +1,10 @@
+Status for dev2 rx=2 (2/s) tx=2 (2/s) qsize=0 (0) vm=7738
+Status for production rx=381616 (381616/s) tx=0 (0/s) qsize=9 (9) vm=1252
+Status for adapters rx=1 (1/s) tx=60 (60/s) vm=859 FileTransport="File Transport: received 60, sent 0"
+Status for dashboards vm=761.5
+WARNING component dev1 may be down: Cannot connect to http://localhost:15903/correlator/status
+Status for dev2 rx=4 (2/s) tx=4 (2/s) qsize=0 (0) vm=7742
+Status for production rx=736294 (368147/s) tx=0 (0/s) qsize=0 (4.5) vm=1252
+Status for adapters rx=2 (2/s) tx=120 (60/s) vm=859 FileTransport="File Transport: received 120, sent 0"
+Status for dashboards vm=761.5
+WARNING component dev1 may be down: Cannot connect to http://localhost:15903/correlator/status

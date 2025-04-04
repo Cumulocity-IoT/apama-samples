@@ -1,0 +1,14 @@
+// $Copyright (c) 2017-2018 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+/*
+	Replace this with your actual application
+*/
+monitor logAllEvents
+{
+	action onload()
+	{
+		on all MyEvent() as me {
+			log me.toString() at CRIT;
+		}
+	}
+}

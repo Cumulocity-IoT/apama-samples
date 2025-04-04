@@ -1,0 +1,5 @@
+context receiver got: A("Hello, World")
+channel receiver got: A("Hello, World")
+java.lang.IllegalArgumentException - Please don't use this function to send events to the current context!
+SendPluginTest [4] Stack dump:
+	SendPluginTest.sendto()

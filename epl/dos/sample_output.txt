@@ -1,0 +1,3 @@
+com.apama.samples.dos.PingAlert("a.b.c.d",36)
+com.apama.samples.dos.PingAlert("a.b.c.d",72)
+com.apama.samples.dos.PingAlert("a.b.c.d",17)

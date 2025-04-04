@@ -1,0 +1,176 @@
+// $Copyright(c) 2009 Progress Software Corporation. All Rights Reserved.$ 
+// $Copyright (c) 2013-2016 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+/**
+ * This sample implements a bank with a Bank DB (Database) responding to get and compareset requests
+ * keyed by account name.  The compareset event supplies an expected old value, and if the current 
+ * value is different, then no change is made to the value (and the client should retry, which the teller does)
+ */
+
+/**
+ * Sent from a teller to the bank database
+ */
+event Get {
+	integer id;
+	string account;	
+	context caller;
+}
+
+event GetResponse {
+	integer id;
+	float amt;
+}
+
+/**
+ * Sent from a teller to the bank database
+ */
+event CompareSet {
+	integer id;
+	string account;
+	float oldAmt;
+	float amt;
+	context caller;
+}
+
+event CompareSetResponse {
+	boolean success;
+	integer id;
+}
+
+event TransferMoneyState {
+	TransferMoney t;
+	float fromAmt;
+	float toAmt;
+}
+
+
+/**
+ * Singleton that holds all the data. Should only interact with tellers, not customers
+ */
+monitor BankDB {
+	dictionary<string, float> accounts;
+	action onload() {
+		spawn server() to context("BankDB");
+	}
+
+	action server() {
+		monitor.subscribe(DB.channel);
+		on all SetupAccount() as setup {
+			if accounts.hasKey(setup.account) {
+				log "Error - ignoring second attempt to create account "+setup.toString() at ERROR;
+			} else {
+				accounts.add(setup.account, setup.amt);
+			}
+		}
+
+		on all Get() as get {
+			if accounts.hasKey(get.account) {
+				send GetResponse(get.id, accounts[get.account]) to get.caller;
+			}
+		}
+
+		on all CompareSet() as set {
+			boolean success:=false;
+			if accounts.hasKey(set.account) {
+				if accounts[set.account] = set.oldAmt {
+					// as this mThread is the only one that can access the 
+					// accounts structure, and only one thread can run this
+					// mThread at a time, we are gauranteed to have no race here.
+					accounts[set.account]:=set.amt;
+					success:=true;
+				}
+			}
+			send CompareSetResponse(success, set.id) to set.caller;
+		}
+
+		on all SendBalances() {
+			log accounts.toString() at INFO;
+			send Accounts(accounts) to "output";
+		}
+	}
+}
+
+
+/** 
+ * A bank teller (of which there are many) who can transfer money from one 
+ * account to another by communicating with the bank's database
+ */
+monitor BankTeller {
+	string db:=DB.channel;
+	RaceExposer races;
+	string teller;
+	action onload() {
+		sequence<string> tellers := ["teller1", "teller2"];
+		string teller;
+		for teller in tellers {
+			spawn tellerJob(teller) to context(teller);
+		}
+	}
+
+	action tellerJob(string tellerId) {
+		monitor.subscribe(tellerId);
+		teller:=tellerId;
+		races.init();
+		on all TransferMoney(teller=teller) as transferMoney {
+			// transferring money from one account to another is done in 3 phases:
+ 			// 1. Debit the from account
+			// 2. Credit the to account
+			// 3. Finish off
+			// each is in a separate action, and each action calls the next
+			// when it is complete:
+
+			TransferMoneyState transfer:=new TransferMoneyState;
+			transfer.t:=transferMoney;
+
+			transferDebit(transfer);
+		}
+	}
+
+	/**
+ 	 * atomicAddtoAccount adds amt to act in the bank's database, and when 
+	 * complete, calls whenFinished with the transfer argument.
+	 * This is called at least twice in the process of transferring money from 
+	 * one account to another.
+	 */
+	action atomicAddToAccount(string act, float amt, action<TransferMoneyState, float> whenFinished, TransferMoneyState transfer) {
+		integer getId:=integer.getUnique();
+		send Get(getId, act, context.current()) to db;
+		
+		on GetResponse(id=getId) as get {
+			float newAmount:=get.amt + amt;
+			
+			races.spinSleep(teller, "teller1", 0.6);
+
+			integer comparesetId:=integer.getUnique();
+			send CompareSet(comparesetId, act, get.amt, newAmount, context.current()) to db;
+			
+			on CompareSetResponse(id=comparesetId) as setResponse {
+				if setResponse.success {
+					whenFinished(transfer, newAmount);
+				} else {
+					// amount in the database has been modified - need to retry!
+					log teller +" is re-trying a transaction (could not change "+act+" from "+get.amt.toString()+" to "+newAmount.toString()+")" at INFO;
+					atomicAddToAccount(act, amt, whenFinished, transfer);
+				}
+			}
+		}
+	}
+
+	action transferDebit(TransferMoneyState transfer) {
+		atomicAddToAccount(transfer.t.fromAccount, -transfer.t.amt, transferCredit, transfer);
+	}
+
+	action transferCredit(TransferMoneyState transfer, float newFromAmount) {
+		transfer.fromAmt:=newFromAmount;
+
+		atomicAddToAccount(transfer.t.toAccount, transfer.t.amt, transferFinished, transfer);
+	}
+
+	action transferFinished(TransferMoneyState transfer, float newToAmount) {
+		transfer.toAmt:=newToAmount;
+
+		log teller+" has transferred "+transfer.t.amt.toString()+", balances are "+transfer.t.fromAccount+":"+transfer.fromAmt.toString()+", "+transfer.t.toAccount+":"+transfer.toAmt.toString() at INFO;
+		send TransferMoneyComplete(transfer.t.fromAccount, transfer.t.toAccount, transfer.t.amt) to "output";
+	}
+
+}

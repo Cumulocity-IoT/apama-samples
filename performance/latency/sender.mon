@@ -1,0 +1,51 @@
+// $Copyright(c) 2013 Progress Software Corporation. All Rights Reserved.$ 
+// $Copyright (c) 2013-2018 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+package com.apama.latency;
+
+using com.apama.correlator.timeformat.TimeFormat;
+
+monitor LatencySender
+{
+	float hz;
+	float startsend := 0.0;
+	integer count := 0;
+	integer measureFrequency;
+	action onload()
+	{
+		on all unmatched any() as e 
+		{ 
+			route com.apama.latency.LatencyTest(e);
+		}
+
+		on all LatencyTest() as lt
+		{
+			float now := TimeFormat.getMicroTime();
+			boolean measure := false;
+			if measureFrequency > 0 {
+				measure := measureFrequency.rand() = 0;
+			}
+			if measure { send _latency_start(now) to "output"; }
+			if 0.0 = startsend {
+				startsend := now;
+				send lt.contained_event to "output";
+			} else {
+				float next := startsend + (count.toFloat() / hz);
+				while (now < next) {
+					now := TimeFormat.getMicroTime();
+				}
+				send lt.contained_event to "output";
+			}
+			if measure { send _latency_end() to "output"; }
+			count := count + 1;
+		}
+
+		on all LatencyRate() as rate
+		{
+			hz := rate.hz.toFloat();
+			measureFrequency := rate.probability;
+			startsend := 0.0;
+			count := 0;
+		}
+	}
+}

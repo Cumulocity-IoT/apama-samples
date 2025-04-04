@@ -1,0 +1,5 @@
+SimplePlugin function test called
+arg = Hello, Simple Plugin
+return value = Hello, World
+SimplePluginTest [1] simple.test = Hello, World
+SimplePluginTest [1] arg = Hello, Simple Plugin

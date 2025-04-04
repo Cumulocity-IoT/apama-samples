@@ -1,0 +1,9 @@
+# Correlator configuration file to initialize this application from the command line. 
+correlator:
+   initialization:
+      list:
+         - ${APAMA_HOME}/monitors/ConnectivityPluginsControl.mon
+         - ${APAMA_HOME}/monitors/ConnectivityPlugins.mon
+         - ${APAMA_HOME}/monitors/ManagementImpl.mon
+         - ${APAMA_HOME}/monitors/Management.mon
+         - ${PARENT_DIR}/Demo.mon

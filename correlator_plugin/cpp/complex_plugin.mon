@@ -1,0 +1,119 @@
+/**
+ *
+ * MonitorScript program to test the complex example plugin
+ *
+ * $Copyright (c) 2016-2017, 2022 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+ *
+ */
+
+monitor ComplexPlugin {
+
+	// Load the plugin
+	import "complex_plugin" as plugin;
+
+	// Sequences of primitives
+	sequence<integer> intSeqOne; integer retInt;
+	sequence<integer> intSeqTwo;
+	sequence<integer> intSeqThree;
+	sequence<float> floatSeq; float retFloat;
+	sequence<boolean> boolSeq; boolean retBool;
+	sequence<string> stringSeq; string retStr;
+
+	// Sequence of sequences
+	sequence<sequence<integer> > intSeqSeq;
+	
+	// Sequence of any type
+	sequence<any> anySeq;
+
+   action onload {
+		// Load the sequences
+		intSeqOne.append(4); 
+		intSeqOne.append(-1); 
+		intSeqOne.append(9);
+
+		intSeqTwo.append(-53);
+		intSeqTwo.append(83);
+		intSeqTwo.append(44);
+		intSeqTwo.append(61);
+
+		intSeqThree.append(-10);
+		intSeqThree.append(30);
+
+		floatSeq.append(3.4); 
+		floatSeq.append(1.2); 
+		floatSeq.append(-6.52); 
+		floatSeq.append(4.01);
+
+		boolSeq.append(true); 
+		boolSeq.append(false);
+
+		stringSeq.append("Hello "); 
+		stringSeq.append("Complex "); 
+		stringSeq.append("Plugin");
+
+		retInt := plugin.getIntAvg(intSeqOne);
+		log "intSeq avg: " + retInt.toString() at INFO;
+
+		retFloat := plugin.getFloatStd(floatSeq);
+		log "floatSeq std: " + retFloat.toString() at INFO;
+
+		retBool := plugin.getBoolAnd(boolSeq);
+		log "boolSeq and: " + retBool.toString() at INFO;
+
+		retStr := plugin.getStrCat(stringSeq);
+		log "strSeq strcat: " + retStr.toString() at INFO;
+
+		// Build the sequence of sequences
+		intSeqSeq.append(intSeqOne);
+		intSeqSeq.append(intSeqTwo);
+		intSeqSeq.append(intSeqThree);
+
+		// Iterate over the sequence of sequences
+		sequence<integer> intSeq;
+		integer i := 0;
+		for intSeq in intSeqSeq {
+			log "intSeq[" + i.toString() + "] avg: " + plugin.getIntAvg(intSeq).toString() at INFO;
+			i := i + 1;
+		}
+
+		// Creates a first complex number chunk
+		chunk complexNumberFull := plugin.makeComplexNumberFull(4.0, -1.4);
+		printComplexNumber(complexNumberFull);
+
+		// Creates a second complex number chunk
+		chunk complexNumberEmpty := plugin.makeComplexNumberEmpty();
+		// Set the real and imaginary values of the number
+		plugin.setRealVal(complexNumberEmpty, 2.0);
+		plugin.setImagVal(complexNumberEmpty, 3.0);
+		printComplexNumber(complexNumberEmpty);
+
+		// Add the second complex number to the first complex number
+		plugin.addComplexNumber(complexNumberFull, complexNumberEmpty);
+		printComplexNumber(complexNumberFull);
+		
+		// Log some types
+		log "new any type: " + plugin.getTypes(new any).toString() at INFO;
+		log "boolean type: " + plugin.getTypes(true).toString() at INFO;
+		log "intSeqOne type: " + plugin.getTypes(intSeqOne).toString() at INFO;
+		log "intSeqSeq type: " + plugin.getTypes(intSeqSeq).toString() at INFO;
+		
+		// Build sequence of any types
+		anySeq.append("string");
+		anySeq.append(false);
+		anySeq.append(12.34d);
+		anySeq.append(intSeqThree);
+		log "anySeq type: " + plugin.getTypes(anySeq).toString() at INFO;
+	}
+
+	action printComplexNumber(chunk complexNumber)
+	{
+		float real := plugin.getRealVal(complexNumber);
+		float imag := plugin.getImagVal(complexNumber);
+		string sign := "";
+		if(imag >= 0.0) {
+			sign := "+";
+		}
+		log real.toString() + sign + imag.toString() + "i" at INFO;
+	}
+}

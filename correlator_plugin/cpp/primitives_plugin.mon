@@ -1,0 +1,29 @@
+/**
+ * MonitorScript program to test the primitives example plugin
+ *
+ * $Copyright (c) 2016, 2022 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+ *
+ */
+
+monitor PrimitivesPlugin {
+
+	// Load the plugin
+	import "primitives_plugin" as plugin;
+
+	integer a := 10;
+	float b := 5.4;
+	boolean c := true;
+	string d := "primitives plugin";
+	boolean ret := false;
+
+   action onload {
+		// Call the plugin function
+		ret := plugin.setPrimitives(a, b, c, d);
+		log "setPrimitives " + a.toString() + " " +
+									  b.toString() + " " +
+									  c.toString() + " " +
+									  d.toString() + " " + 
+									  ret.toString() at INFO;
+	}
+}

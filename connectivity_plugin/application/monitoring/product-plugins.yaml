@@ -1,0 +1,19 @@
+# $Copyright (c) 2023 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+# Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+
+connectivityPlugins:
+  httpClient:
+    libraryName: connectivity-http-client
+    class: HTTPClient
+  stringCodec: 
+    libraryName: connectivity-string-codec
+    class: StringCodec
+  mapperCodec: 
+    libraryName: MapperCodec
+    class: MapperCodec
+  classifierCodec: 
+    libraryName: ClassifierCodec
+    class: ClassifierCodec
+  jsonCodec: 
+    libraryName: connectivity-json-codec
+    class: JSONCodec

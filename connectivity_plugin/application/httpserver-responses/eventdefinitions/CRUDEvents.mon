@@ -1,0 +1,90 @@
+/*
+ * $Copyright (c) 2018 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+ */
+package apamax;
+
+/** Event for adding a new object to the DB. Responds with Success, which contains the new location of the object. */
+event CreateObject
+{
+	/** Request ID for responding to the HTTP request. */
+	integer requestId;
+	/** Channel to respond on. */
+	string channel;
+	/** Address of the source of the request */
+	string source;	
+	/** Data to store in the DB. */
+	any data;
+}
+
+/** Event for updating an existing object in the DB. Responds with Success, or Error if the object doesn't exist. */
+event UpdateObject
+{
+	/** Request ID for responding to the HTTP request. */
+	integer requestId;
+	/** Channel to respond on. */
+	string channel;
+	/** Address of the source of the request */
+	string source;
+	/** Path to the object to update. */
+	string path;
+	/** Data to replace for the object. */
+	any data;
+}
+
+/** Event for returning the value of the object in the DB. Responds with Object, or Error if the object doesn't exist. */
+event ReadObject
+{
+	/** Request ID for responding to the HTTP request. */
+	integer requestId;
+	/** Channel to respond on. */
+	string channel;
+	/** Address of the source of the request */
+	string source;	
+	/** Path to the object to get. */
+	string path;	
+}
+
+/** Event for removing an object from the DB. Responds with Success, or Error if the object doesn't exist. */
+event DeleteObject
+{
+	/** Request ID for responding to the HTTP request. */
+	integer requestId;
+	/** Channel to respond on */
+	string channel;
+	/** Address of the source of the request */
+	string source;	
+	/** Path for the object to delete. */
+	string path;
+}
+
+/** Return value for GetObject. Contains the current value of the object. */
+event Object
+{
+	/** Request ID of the corresponding request object. */
+	integer requestId;
+	/** Current value of the object. */
+	any data;
+}
+
+/** Indicates the requested operation succeeded. */
+event Success
+{
+	/** Request ID of the corresponding request object. */
+	integer requestId;
+	/** Location of the object. */
+	string objectLocation;
+	/** Message describing the operation which was successful. */
+	string message;
+}
+
+/** Indicates the requested operation failed. */
+event Error
+{
+	/** Request ID of the corresponding request object. */
+	integer requestId;
+	/** Error code. */
+	integer code;
+	/** Message describing the error. */
+	string message;
+}

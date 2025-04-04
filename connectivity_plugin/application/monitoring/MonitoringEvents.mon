@@ -1,0 +1,75 @@
+/**
+ * Public events for MonitoringApp sample
+ *
+ * Uses the HTTPClient, JSONCodec, classifier and mapper codecs to monitor the 
+ * status of other Apama components
+ *
+ * $Copyright (c) 2016-2017 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+ */
+
+package apamax.monitoring;
+
+/** Event that the user sends in to start monitoring a service */
+event MonitorComponent
+{
+	string type;
+	string name;
+	string host;
+	integer port;
+}
+
+/** Event that the user sends in to stop monitoring a service */
+event StopMonitor
+{
+	string host;
+	integer port;
+}
+
+/** Event which is emitted if a component has a large input queue */
+event QueueSizeWarning
+{
+	string name;
+	float qsize;
+	float meanqsize;
+}
+
+/** Event which is emitted if an error is returned trying to get status */
+event ComponentDownWarning
+{
+	string name;
+}
+
+/** Internal event for sending to the chain */
+event RequestStatus
+{
+	string name;
+	string path;
+}
+
+/** Status for a Correlator component */
+event CorrelatorStatus
+{
+	string name;
+	float rx;
+	float tx;
+	float qsize;
+	float vm;
+}
+
+/** Status for components with no special information */
+event GenericComponentStatus
+{
+	string name;
+	float vm;
+}
+
+/** Internal error response event from the chain */
+event StatusError
+{
+	string name;
+	string url;
+	integer code;
+	string message;
+}
+

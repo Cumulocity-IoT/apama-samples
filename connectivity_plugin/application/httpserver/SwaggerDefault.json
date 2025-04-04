@@ -1,0 +1,66 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Apama Correlator Service Sample API",
+    "description": "Simple event interface for Apama Samples \"serverDefaultEventType\"",
+    "version": "1"
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/": {
+      "put": {
+        "summary": "Send event to a named channel",
+        "description": "The JSON payload contains an event consisting of fields.",
+        "requestBody": {
+          "description": "Event fields",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/data"
+              }
+            }
+          },
+          "required": false
+        },
+
+        "responses": {
+          "202": {"description": "Accepted"},
+          "400": {"description": "Bad Request"},
+          "401": {"description": "Unauthorized"},
+          "405": {"description": "Method Not Allowed"},
+          "429": {"description": "Too Many Requests"},
+          "500": {"description": "Internal Server Error"}
+        },
+        "x-codegen-request-body-name": "data"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "data": {
+        "required": [
+          "sensorId",
+          "sensorName",
+          "temperature"
+        ],
+        "type": "object",
+        "properties": {
+          "sensorId": {
+            "type": "integer"
+          },
+          "sensorName": {
+            "type": "string"
+          },
+          "temperature": {
+            "type": "number",
+            "format": "float"
+          }
+        }
+      }
+    }
+  }
+}

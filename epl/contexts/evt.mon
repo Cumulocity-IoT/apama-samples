@@ -1,0 +1,28 @@
+/*
+ * $Copyright(c) 2009 Progress Software Corporation (PSC). All rights reserved.$
+ * $Copyright (c) 2013 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+ */
+package com.apamat.marketdata;
+
+event Tick {
+	string symbol;
+	integer qty;
+	float price;
+	dictionary<string,string> extraParams;
+}
+
+
+event Statistics {
+	string symbol;
+	float medianPrice;
+	float avgPrice;
+}
+
+event Generate {
+	sequence<string> symbols;
+	integer numberPoints;
+}
+
+event Finished {
+}

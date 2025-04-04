@@ -1,0 +1,130 @@
+// $Copyright (c) 2018 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+
+
+using com.apama.memorystore.Row;
+using com.apama.memorystore.Storage;
+using com.apama.memorystore.Store;
+using com.apama.memorystore.Schema;
+using com.apama.memorystore.Table;
+using com.apama.memorystore.Finished;
+
+/** An event whose fields define the schema of a MemoryStore table. */
+event SampleSchema {
+	string stringfield;
+	integer value;
+	float timestamp;
+}
+
+/** Configure the sample to use an in-memory store of the specified name. */
+event PrepareInMemory
+{
+	string name;
+}
+
+/**
+ * Simple monitor to demonstrate the use of in-memory stores.
+ */
+monitor SimpleMemStore 
+{
+	
+	constant string TABLE_NAME := "MyData";
+	string storeName;
+
+	Store store;
+	Table tbl;
+
+	action onload {
+		// Log failures
+		on all Finished(success=false) as f
+		{
+			log "Asynchronous MemoryStore operation failed: "+f.toString() at ERROR;
+			die;
+		}
+
+		on all PrepareInMemory() as p
+		{
+			// Create a memory store in memory
+			spawn prepareStore(p.name, true);
+		}
+		
+	}
+	
+	action prepareStore(string name, boolean inMemory) {
+		storeName := name;
+		integer storeId;
+		
+		// Prepare the store
+		log "Preparing in-memory MemoryStore: " + storeName + "." at INFO;
+		storeId := Storage.prepareInMemory(storeName);
+		
+		// When the store is ready, prepare the table
+		on Finished(id = storeId) as f {
+			if not f.success {
+				log "Failed to prepare MemoryStore: " + f.status at ERROR;
+				die;
+			}
+			// Open our created store
+			store := Storage.open(storeName);
+			
+			prepareTable();
+		}
+	}
+	
+	action prepareTable() {
+		log "Preparing table " + TABLE_NAME + "." at INFO;
+
+		// Set the schema for the table. Any data added to the row must be in this format
+		Schema schema := Schema.schemaFromAny(new SampleSchema);
+		
+		// Wait for the table to be prepared
+		on Finished(id = store.prepare(TABLE_NAME, schema)) as f {
+			if not f.success {
+				log "Failed to prepare MemoryStore table: "+f.status at ERROR;
+				die;
+			}
+			
+			// Open the table
+			log "Opening table " + TABLE_NAME + " and performing first write." at INFO;
+			tbl := store.open(TABLE_NAME);
+
+			// For the purposes of the sample, spawn separate contexts to concurrently update the same row
+			spawn modifyRow() to context("updaterContext1");
+			spawn modifyRow() to context("updaterContext2");
+			spawn modifyRow() to context("updaterContext3");
+		}
+	}
+	
+	action modifyRow() {
+		// Get the current row if it exists, or an empty new row for us to populate if it doesn't.  
+		Row row := tbl.get("my-example-key");
+		
+		// Loop until we've written the row and successfully committed it.  
+		// If someone else modifies this row between us getting it and trying to commit changes, 
+		// this will update the row with the current values, return false and we'll try again. 
+		integer commitAttempts := 0;
+		while ( (commitAttempts = 0) or not row.tryCommitOrUpdate() )
+		{
+			// Modify some test data using an event
+			SampleSchema data := new SampleSchema;
+			data.stringfield := "Hello world";
+			data.timestamp := currentTime;
+			data.value := row.getInteger("value") + 1;
+			row.setAll(data);
+			
+			commitAttempts := commitAttempts + 1;
+			if commitAttempts > 1 {
+				log "*** Retrying MemoryStore modification and commit for '"+row.getKey()+"', attempt #"+commitAttempts.toString()+" for this modification" at INFO;
+			}
+		}
+		
+		// Print the row
+		if row.inTable() 
+		{
+			log "*** Successfully committed changes to MemoryStore '"+storeName+"' row '"+row.getKey()+"': "+row.toDictionary().toString() at INFO;
+		} else {
+			log "MemoryStore row '" + row.getKey() + "' is not present" at ERROR;
+		}
+	}
+	
+}

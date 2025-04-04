@@ -1,0 +1,79 @@
+/*
+ * Copyright (c) 2023 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+ * 
+ */
+
+package com.apamax.epl.functional;
+
+using com.apama.functional.Fn;
+using com.apama.functional.Functional;
+using com.apama.cumulocity.Util;
+using com.apama.cumulocity.Alarm;
+using com.apama.cumulocity.FindAlarm;
+using com.apama.cumulocity.FindAlarmResponse;
+using com.apama.cumulocity.FindAlarmResponseAck;
+using com.apama.cumulocity.ManagedObject;
+
+/** Event to trigger the clearing of all active alarams on these devices. */
+event ClearAlarms {
+	sequence<ManagedObject> objects;
+}
+
+/** This monitor is responsible for taking a sequence of managed objects and 
+* clearing all the active alarms on them.
+*
+* For the purposes of this sample, calls to Cumulocity are intercepted
+* by listeners in the Simulator monitor.
+*/
+
+monitor ClearAllAlarms {
+	action onload() {	
+		on all ClearAlarms() as ca {
+			clearAllAlarmsForDevices(ca.objects);
+		}
+	}
+	
+	// helper function to send a find alarm.
+	action sendFindAlarm(string source) returns integer
+	{
+		return <integer> Fn.sendToChannel(FindAlarm.SEND_CHANNEL, 
+			FindAlarm(Util.generateReqId(), {"source": source.toString() }))
+			.getEntry("reqId");
+		}
+	// helper function to append one list to another.
+	action appendSequence(sequence<Alarm> allAlarms, sequence<FindAlarmResponse> newAlarms)
+	{
+		Functional(newAlarms).map(Fn.getEntry("alarm")).map(allAlarms.append);
+	}
+
+	// helper function to listen for all alarms.
+	action receiveAlarms(sequence<Alarm> allAlarms, integer reqId) returns integer
+	{
+		Fn.getAllEvents(FindAlarmResponse.getName(), {"reqId":<any>reqId},
+						FindAlarmResponseAck.getName(), {"reqId":<any>reqId},
+						Fn.partial(appendSequence, [allAlarms]));
+		return reqId;
+	}
+
+	// helper function to clear all alarms.
+	action clearAllAlarms(sequence<Alarm> allAlarms)
+	{
+		monitor.unsubscribe(FindAlarmResponse.SUBSCRIBE_CHANNEL);
+		Functional(allAlarms)
+			.map(Fn.setEntry("status", "CLEARED"))
+			.map(Fn.partial(Fn.sendToChannel, Alarm.SEND_CHANNEL));
+	}
+	
+	/** Takes a sequence of managed objects and clears all the active alarms on them */
+	action clearAllAlarmsForDevices(sequence<ManagedObject> objects)
+	{
+		monitor.subscribe(FindAlarmResponse.SUBSCRIBE_CHANNEL);
+		sequence<Alarm> allAlarms := new sequence<Alarm>;
+		Functional(objects)
+			.map(Fn.getEntry("id")) // get the id from each object.
+			.map(sendFindAlarm) // send a find alarm for each, returning the ids.
+			.map(Fn.partial(receiveAlarms, [allAlarms])) // listen for all those alarms.
+			.waitForAllCompleted(FindAlarmResponseAck.getName(), "reqId", Fn.partial(clearAllAlarms, [allAlarms])); // clear all the alarms we found.
+	}
+}

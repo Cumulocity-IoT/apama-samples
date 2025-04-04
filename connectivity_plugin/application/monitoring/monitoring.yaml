@@ -1,0 +1,113 @@
+# Sample connectivity configuration for the weather geolocation sample
+#
+# $Copyright (c) 2016-2018 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+# Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+
+dynamicChains:
+
+  # Define a chain to handle RequestStatus for Correlators
+  # Classify the responses as one of the following:
+  #  - CorrelatorStatus
+  #  - StatusError
+  # Chains are created programatically in EPL
+  correlator:
+    # Use the Map host plugin, so the payload type will be a map<string,data>
+    # with the keys being the name of the fields in the event
+    - apama.eventMap:
+        allowMissing: true
+
+    # The mapper does the work to take payload fields expected by the host
+    # plugin and turn them into metadata fields needed by the transport
+    - mapperCodec:
+        # RequestStatus are outbound only, set the method to GET and copy
+        # the URL and ID to metadata
+        apamax.monitoring.RequestStatus:
+          towardsTransport:
+            mapFrom:
+              - metadata.http.path: payload.path
+              - metadata.requestId: payload.name
+            defaultValue:
+              - metadata.http.method: GET
+              - metadata.http.headers.Accept: application/json
+        # Responses are success replies, moving the ID
+        # into a payload field
+        apamax.monitoring.CorrelatorStatus:
+          towardsHost:
+            mapFrom:
+              - payload.name: metadata.requestId
+              - payload.rx: payload.numReceived
+              - payload.tx: payload.numEmits
+              - payload.qsize: payload.numQueuedInput
+              - payload.vm: payload.virtualMemoryMB
+        # Errors are failure replies, which have a responsecode
+        # and message instead of a body
+        apamax.monitoring.StatusError:
+          towardsHost:
+            mapFrom:
+              - payload.name: metadata.requestId
+              - payload.code: metadata.http.statusCode
+              - payload.message: metadata.http.statusReason
+
+    # The classifier checks the responsecode to see whether or not it's 
+    # an error and assigns the correct event type so that the mapper
+    # can correctly map it
+    - classifierCodec:
+        rules:
+          - apamax.monitoring.CorrelatorStatus:
+              - metadata.http.statusCode: 200
+          - apamax.monitoring.StatusError:
+              - metadata.http.statusCode:
+    # No configuration needed for the JSON codec, it just uses
+    # the map and json data
+    - jsonCodec
+    # Need to encode to binary payloads
+    - stringCodec
+    # Set the host and port from substitution variables passed to
+    # createChain in EPL
+    - httpClient:
+        host: "@{HOST}"
+        port: "@{PORT}"
+
+  # Define a chain to handle RequestStatus for other component types
+  # Classify the responses as one of the following:
+  #  - GenericComponentStatus
+  #  - StatusError
+  # Chains are created programatically in EPL
+  component:
+    - apama.eventMap:
+        allowMissing: true
+
+    - mapperCodec:
+        apamax.monitoring.RequestStatus:
+          towardsTransport:
+            mapFrom:
+              - metadata.http.path: payload.path
+              - metadata.requestId: payload.name
+            defaultValue:
+              - metadata.http.method: GET
+              - metadata.http.headers.Accept: application/json
+        apamax.monitoring.GenericComponentStatus:
+          towardsHost:
+            mapFrom:
+              - payload.name: metadata.requestId
+              - payload.vm: payload.vmemory
+        apamax.monitoring.StatusError:
+          towardsHost:
+            mapFrom:
+              - payload.name: metadata.requestId
+              - payload.code: metadata.http.statusCode
+              - payload.message: metadata.http.statusReason
+
+    - classifierCodec:
+        rules:
+          - apamax.monitoring.GenericComponentStatus:
+              - metadata.http.statusCode: 200
+          - apamax.monitoring.StatusError:
+              - metadata.http.statusCode:
+    - jsonCodec
+    # Need to encode to binary payloads
+    - stringCodec
+    - httpClient:
+        host: "@{HOST}"
+        port: "@{PORT}"
+

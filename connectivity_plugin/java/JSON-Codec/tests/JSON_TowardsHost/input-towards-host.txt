@@ -1,0 +1,29 @@
+metadata={"aim":"Top-level JSON document is a primitive integer"}
+payload_string=42
+
+metadata={"aim":"Top-level JSON document is a primitive string"}
+payload_string="Forty-two"
+
+metadata={"aim":"Top-level JSON document is a list"}
+payload_string=[1,2,3]
+
+metadata={"aim":"Top-level JSON document is a map"}
+payload_string={"one":1,"two":2}
+
+metadata={"aim":"Document is a map. An exciting map"}
+payload_string={"list":[1,2,3], "emptymap":{  }, "othermap":{"1":"one","two":2}, "null":  null}
+
+metadata={"aim":"Document contains an escaped string"}
+payload_string={"key1":"Not quoted", "key2":"This is a quote symbol --> \" <--"}
+
+metadata={"aim":"Document contains a newline"}
+payload_string={"key1":"Not quoted", "key2":"This is a newline symbol --> \n <--"}
+
+metadata={"aim":"Metadata is preserved", "key1":"value1","key2":"value2"}
+payload_string={"four":4,"three":3}
+
+metadata={"aim":"Metadata is preserved with null payload", "key1":"value1","key2":"value2"}
+payload_json=null
+
+metadata={"aim": "final message"}
+payload_json=null

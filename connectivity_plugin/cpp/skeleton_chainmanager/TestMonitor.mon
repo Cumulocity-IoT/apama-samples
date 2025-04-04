@@ -1,0 +1,36 @@
+/**
+ * An application to demonstrate use of Connectivity Plug-in chain manager.
+ *
+ * Listens for events from transport, then sends an event to the transport
+ * for that request to report the result.
+ * 
+ * $Copyright (c) 2017-2018 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+ */
+using com.softwareag.connectivity.ConnectivityPlugins;
+
+event EventToTransport {
+	string s;
+}
+
+event EventFromTransport {
+	string s;
+}
+
+monitor TestMonitor {
+	action onload() {
+		monitor.subscribe("MyTransport:TestChannel");
+		
+		on all EventFromTransport() as evt {
+			log "Message received from Transport: " + evt.s at INFO;
+		}
+		
+		ConnectivityPlugins.onApplicationInitialized();
+		
+		EventToTransport mEvt := new EventToTransport;
+		mEvt.s := "Hello World";
+		
+		send mEvt to "MyTransport:TestChain"  ;		
+		
+	}
+}

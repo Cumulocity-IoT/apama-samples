@@ -1,0 +1,79 @@
+// $Copyright(c) 2009 Progress Software Corporation. All Rights Reserved.$ 
+// $Copyright (c) 2013-2016 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+using com.apama.correlator.timeformat.TimeFormat;
+/**
+ * internal to all bank implementations
+ */
+
+event DB {
+	constant string channel:="BankDB";
+}
+
+/**
+ * initialisation
+ */
+event SetupAccount {
+	string account;
+	float amt;
+}
+
+/**
+ * Request a bank teller (one of teller1, teller2) to transfer
+ * some money from one account to another
+ */
+event TransferMoney {
+	string teller;
+	string fromAccount;
+	string toAccount;
+	float amt;
+}
+
+event TransferMoneyComplete {
+	string fromAccount;
+	string toAccount;
+	float amt;
+}
+
+
+/** 
+ * request an event containing all balances
+ */
+event SendBalances {
+}
+
+/** 
+ * event sent to output as a result of SendBalances.
+ */
+event Accounts {
+	dictionary<string, float> accounts;
+}
+
+
+/** 
+ * send in to expose races. Enables the RaceExposer
+ */
+event ExposeRaces {
+}
+
+/** 
+ * Used to pause monitorscript execution in certain places to expose race conditions.
+ */
+event RaceExposer {
+	boolean enabled;
+	action init() {
+		on all ExposeRaces() {
+			enabled:=true;
+		}
+	}
+
+	action spinSleep(string myId, string ifId, float time) {
+		if enabled and myId = ifId {
+			log "spinning for time "+time.toString() at INFO;
+			float now:=TimeFormat.getSystemTime();
+			while(TimeFormat.getSystemTime() < now+time) {
+			}
+			log "spun for time "+time.toString() at INFO;
+		}
+	}
+}

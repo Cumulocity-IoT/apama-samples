@@ -1,0 +1,75 @@
+//
+// MonitorScript program to test complex example plugin in Java
+//
+// $Copyright(c) 2002, 2009 Progress Software Corporation (PSC). All rights reserved.$
+// $Copyright (c) 2013,2015-2016, 2022 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+//
+//
+monitor ComplexPluginTest 
+{
+
+	// Load the plugin
+	import "ComplexPlugin" as complex;
+
+	// To hold the return values
+	string str1;
+	string ret1;
+	float ret2;
+
+	// Opaque chunk value
+	chunk myChunk;
+
+	// Loop counter
+	integer i;
+
+	// Sequences for test2
+	sequence<integer> intSeq;
+	sequence<float> floatSeq;
+	sequence<boolean> boolSeq;
+	sequence<string> stringSeq;
+	sequence<decimal> decimalSeq;
+
+	action onload() {
+		// Call test1 function
+		str1 := "Hello, Complex Plugin";
+		ret1 := complex.test1(42, 3.14159, true, str1, -3.14159d);
+		log "complex.test1 = " + ret1 at INFO;
+		log "str1 = " + str1 at INFO;
+
+		// Initialise sequences
+		intSeq.setSize(10);
+		floatSeq.setSize(10);
+		boolSeq.setSize(10);
+		stringSeq.setSize(10);
+		decimalSeq.setSize(10);
+		i := 0;
+		while (i < 10) {
+			intSeq[i] := i;
+			floatSeq[i] := i.toFloat();
+			boolSeq[i] := true;
+			stringSeq[i] := "How long is a piece of string?";
+			decimalSeq[i] := i.toDecimal();
+			i := i + 1;
+		}
+
+		// Call test2 function
+		ret2 := complex.test2(intSeq, floatSeq, boolSeq, stringSeq, decimalSeq);
+		log "complex.test2 = " + ret2.toString() at INFO;
+		i := 0;
+		while (i < 10) {
+			log "intSeq[" + i.toString() + "] = " + intSeq[i].toString() at INFO;
+			log "floatSeq[" + i.toString() + "] = " + floatSeq[i].toString() at INFO;
+			log "boolSeq[" + i.toString() + "] = " + boolSeq[i].toString() at INFO;
+			log "stringSeq[" + i.toString() + "] = " + stringSeq[i].toString() at INFO;
+			log "decimalSeq[" + i.toString() + "] = " + decimalSeq[i].toString() at INFO;
+			i:= i + 1;
+		}
+
+		// Generate a new chunk
+		myChunk := complex.test3(20);
+
+		// Do some computation on the chunk
+		complex.test4(myChunk);
+	}
+}

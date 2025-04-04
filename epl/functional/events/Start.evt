@@ -1,0 +1,11 @@
+// Copyright (c) 2023 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+
+// Run the Simple Functional sample.
+com.apamax.epl.functional.StartSimple()
+
+// Run the ClearAllAlarms sample.
+com.apamax.epl.functional.ClearAlarms([com.apama.cumulocity.ManagedObject("907751","Test Managed object 1","",[],[],[],[],[],[],{},{}), com.apama.cumulocity.ManagedObject("907752","Test Managed object 2","",[],[],[],[],[],[],{},{})])
+
+//Run the AverageCalc sample.
+com.apamax.epl.functional.CalculateAverage("907751", 1.0, 10.0, "c8y_SpeedMeasurement", "speed",10.0);

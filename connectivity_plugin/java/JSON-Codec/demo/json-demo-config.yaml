@@ -1,0 +1,57 @@
+# $Copyright(c) 2016-2017 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+# Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+
+# use our standard unit testing plug-ins to demonstrate this codec
+connectivityPlugins:
+  unitTestHarness:
+    classpath: ${APAMA_HOME}/lib/connectivity-unit-test-harness.jar
+    class: com.softwareag.connectivity.testplugins.UnitTestHarness
+  nullTransport:
+    classpath: ${APAMA_HOME}/lib/connectivity-unit-test-harness.jar
+    class: com.softwareag.connectivity.testplugins.NullTransport
+    
+startChains:
+  # Create a chain that 
+  # (a) Writes EPL events from the correlator into a file, and
+  # (b) Reads from a file and sends the contents as events into the correlator
+  jsonChain:
+    # When this host plug-in is sent messages from the transport that contain
+    # map<string, object>, it will attempt to turn those maps into EPL events.
+    # Fields will be filled in based on the values of the keys that match those
+    # field names.
+    #
+    # The type of the event is hardcoded here using defaultEventType, as in 
+    # this demo there is only one input event type. 
+    #
+    # Any events sent to the 'jsonChain' channel toward the transport get turned 
+    # intomessages with a map<string, object> payload and sent down the chain
+    # towards the transport
+    - apama.eventMap:
+        defaultEventType: apamax.connectivitysample.CustomerLoggedIn
+        defaultChannel: jsonChain
+    
+    # Any messages passing through this codec towards the host (from the 
+    # transport) are assumed to have string payloads containing JSON documents. 
+    # This codec translates them into map<string, object> payloads which get 
+    # sent up towards the host.
+    #
+    # Any messages passing through this codec towards the transport 
+    # will have their payload translated into JSON and put into the string
+    # payload of a message sent towards the transport. Typically this will
+    # be translating maps into JSON objects, but can also turn lists into JSON
+    # lists and primitives into JSON primitives.
+    - jsonCodec
+    # no configuration is required for this codec
+    
+    # For testing purposes, the standard unitTestHarness codec plug-in can be 
+    # used to send messages from a text file into the chain without the need 
+    # for a real transport
+    - unitTestHarness:
+        pluginUnderTest: towardsHost
+        readFrom: ${PARENT_DIR}/customers-input.json.txt
+        writeTo: ${PARENT_DIR}/specialoffers-output.json.txt
+        logOutput: true
+    
+    # This transport does nothing. For a real use case this would be replaced 
+    # with a transport that sends/receives messages from some external system
+    - nullTransport

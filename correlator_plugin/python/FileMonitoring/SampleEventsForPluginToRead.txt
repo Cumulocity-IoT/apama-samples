@@ -1,0 +1,2 @@
+apamax.filemonitoringsample.ExpectedEvt("My Event Test string")
+apamax.filemonitoringsample.ExpectedEvt("Another event string")

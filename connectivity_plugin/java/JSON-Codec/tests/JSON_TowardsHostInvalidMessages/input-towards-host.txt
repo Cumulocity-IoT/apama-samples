@@ -1,0 +1,11 @@
+metadata={"aim":"Safely handling empty payloads"}
+payload_string=
+
+metadata={"aim":"Invalid JSON with missing quote"}
+payload_string={"abc":"missing quote}
+
+metadata={"aim":"Binary data instead of a string"}
+payload_byte[]=SGVsbG8gV29ybGQ=
+
+metadata={"aim": "final message with valid JSON"}
+payload_string={"Hello world":"Hello"}

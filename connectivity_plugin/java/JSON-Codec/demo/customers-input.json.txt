@@ -1,0 +1,4 @@
+# input file in text format for reading by UnitTestHarness
+payload_string={"userId" : "ab", "name" : "Alfred Brendel", "recentOrders": 1}
+payload_string={"userId":"jb", "name": "James Brown", "recentOrders":2}
+payload_string={"userId":"mj", "name": "Michael Jackson", "recentOrders":5}

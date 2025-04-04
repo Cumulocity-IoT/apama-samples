@@ -1,0 +1,3 @@
+apamax.filemonitoringsample.MonitorDirectory("test",5)
+apamax.filemonitoringsample.MonitorDirectory("test2",5)
+apamax.filemonitoringsample.MonitorDirectory("C:/test2",5)

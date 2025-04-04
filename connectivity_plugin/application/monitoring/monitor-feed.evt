@@ -1,0 +1,11 @@
+// $Copyright (c) 2016 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+
+//
+// Event data feed for the monitoring sample. Replace them with the addresses of your components
+//
+apamax.monitoring.MonitorComponent("correlator", "dev1", "localhost", 15903)
+apamax.monitoring.MonitorComponent("correlator", "dev2", "localhost", 15904)
+//apamax.monitoring.MonitorComponent("correlator", "production", "localhost", 15905)
+//apamax.monitoring.MonitorComponent("component", "dashboard", "localhost", 28888)
+

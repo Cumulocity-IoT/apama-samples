@@ -1,0 +1,99 @@
+# $Copyright (c) 2018,2019 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+# Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+
+# Load the server plugin (other plugins imported with the standard plugins linked bundle)
+connectivityPlugins:
+    httpServer:
+        libraryName: connectivity-http-server
+        class: HTTPServer
+
+# Define the chain manager (global) properties
+dynamicChainManagers:
+   httpServer:
+      transport: httpServer
+      managerConfig:
+         port: ${HTTPServer_port}
+         staticFiles:
+             /swagger.json:
+                 file: ${PARENT_DIR}/swagger.json
+                 contentType: application/json
+                 charset: UTF-8
+             /:
+                 file: ${PARENT_DIR}/index.html
+                 contentType: text/html
+                 charset: UTF-8
+                 
+# Define the chain (per-message) properties and mapping rules
+dynamicChains:
+   httpServer:
+      - apama.eventMap:
+           defaultChannel: requests
+      - mapperCodec:
+          "*":
+             towardsHost:
+                 mapFrom:
+                    - payload.requestId: metadata.requestId
+                    - payload.path: metadata.http.path
+                    - payload.source: metadata.http.source
+                 defaultValue:
+                    - payload.channel: "@{httpServer.responseChannel}"
+             towardsTransport:
+                 mapFrom:
+                    - metadata.requestId: payload.requestId
+                 defaultValue:
+                    - metadata.contentType: application/json
+                           
+      - mapperCodec:
+           apamax.CreateObject:
+              towardsHost:
+                 mapFrom:
+                    - payload.data: payload
+           apamax.UpdateObject:
+              towardsHost:
+                 mapFrom:
+                    - payload.data: payload                   
+           apamax.ReadObject:
+              towardsTransport:
+                 mapFrom:
+                    - payload: payload.data
+           apamax.Object:
+              towardsTransport:
+                 mapFrom:
+                    - payload: payload.data
+                 defaultValue:
+                    - metadata.http.statusCode: 200                   
+           apamax.Success:
+              towardsTransport:
+                 mapFrom:
+                    - metadata.http.headers.location: payload.objectLocation
+                    - payload: payload.message
+                 defaultValue:
+                    - metadata.http.statusCode: 200
+           apamax.Error:
+              towardsTransport:
+                 mapFrom:
+                    - metadata.http.statusCode: payload.code
+                    - payload: payload.message
+              
+      - mapperCodec:
+          "*":
+             towardsHost:
+                defaultValue:
+                   - metadata.requestId: 1
+      - classifierCodec:
+          rules:
+            - apamax.CreateObject:
+                - metadata.http.path: /create
+                - metadata.http.method: PUT
+            - apamax.ReadObject:
+                - metadata.http.method: GET
+            - apamax.UpdateObject:
+                - metadata.http.method: PUT
+            - apamax.DeleteObject:
+                - metadata.http.method: DELETE                            
+      - jsonCodec:
+          filterOnContentType: true
+      - stringCodec
+      - httpServer:
+          automaticResponses: false
+          allowedMethods: [ PUT, GET, DELETE ]

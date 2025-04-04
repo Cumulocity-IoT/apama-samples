@@ -1,0 +1,108 @@
+/*
+ * Copyright (c) 2023 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+ * 
+ */
+
+package com.apamax.epl.functional;
+
+using com.apama.cumulocity.Measurement;
+using com.apama.cumulocity.MeasurementValue;
+using com.apama.cumulocity.FindMeasurement;
+using com.apama.cumulocity.FindMeasurementResponse;
+using com.apama.cumulocity.FindMeasurementResponseAck;
+using com.apama.cumulocity.MeasurementFragment;
+using com.apama.cumulocity.Alarm;
+using com.apama.cumulocity.FindAlarm;
+using com.apama.cumulocity.FindAlarmResponse;
+using com.apama.cumulocity.FindAlarmResponseAck;
+using com.apama.cumulocity.Util;
+using com.apama.functional.Fn;
+
+/** This monitor is responsible for intercepting any call to Cumulocity to avoid having any setup.
+*
+* It intercepts calls to FindMeasurement and sends back multiple hardcoded measurements, which restrict as 
+* requested, on return values with matching source and within dateTo/dateFrom range, some of these are also within 
+* and some outside of the criteria that will count towards the average calculation for the AverageCalc sample.
+* It will intercept calls to MeasurementFragment which will log the newly created MeasurementFragment 
+* from the AverageCalc sample.
+*
+* It intercepts calls to FindAlarms and will return multiple FindAlarmResponse and a single FindAlarmResponseAck 
+* for the ClearAllAlarms sample.
+* It will also intercept all Alarm events, which will show the status of the alarm for the ClearAlarms sample.
+*/
+monitor Simulator {
+	action onload() {
+		//AverageCalc sample intercepting listeners.
+
+		monitor.subscribe(FindMeasurement.SEND_CHANNEL);
+		on all FindMeasurement() as fm {
+			Measurement m1 := new Measurement;
+			m1.id := com.apama.cumulocity.Util.generateReqId().toString();
+			m1.type := "c8y_SpeedMeasurement";
+			m1.source := fm.params["source"]; 
+			m1.time := fm.params["dateFrom"].toFloat();
+
+			m1.measurements["c8y_SpeedMeasurement"] := {"speed":MeasurementValue(1.0, "km/hr", new dictionary<string, any>)};//Should be counted.
+			send FindMeasurementResponse(fm.reqId, m1.id, m1) to FindMeasurementResponse.SUBSCRIBE_CHANNEL;
+			
+			Measurement m2 := new Measurement;
+			m2.id := com.apama.cumulocity.Util.generateReqId().toString();
+			m2.type := "c8y_SpeedMeasurement";
+			m2.source := fm.params["source"]; 
+			m2.time := fm.params["dateTo"].toFloat();
+			m2.measurements["c8y_SpeedMeasurement"] := {
+				"speed":MeasurementValue(4.0, "km/hr", new dictionary<string, any>),//Should be counted.
+				"Other":MeasurementValue(5.0, "km/hr", new dictionary<string, any>)};//Should not be counted as the series doens't match.
+			m2.measurements["c8y_SpeedOther"] := {"speed":MeasurementValue(6.0, "km/hr", new dictionary<string, any>)};
+			send FindMeasurementResponse(fm.reqId, m2.id, m2) to FindMeasurementResponse.SUBSCRIBE_CHANNEL;
+	
+			Measurement m3 := new Measurement;
+			m3.id := com.apama.cumulocity.Util.generateReqId().toString();
+			m3.type := "c8y_SpeedMeasurement";
+			m3.source := fm.params["source"]; 
+			m3.time := fm.params["dateTo"].toFloat();
+			m3.measurements["c8y_SpeedMeasurement"] := {"speed":MeasurementValue(13.0, "km/hr", new dictionary<string, any>)};//Should not be counted as over the threshold
+			send Fn.setFields(new FindMeasurementResponse, [fm.reqId, m3.id, m3]) to FindMeasurementResponse.SUBSCRIBE_CHANNEL;
+						
+			send Fn.setFields(new FindMeasurementResponseAck, [fm.reqId, false, 200, ""]) to FindMeasurementResponse.SUBSCRIBE_CHANNEL;
+		}
+		
+		monitor.subscribe(MeasurementFragment.SEND_CHANNEL);
+		on all MeasurementFragment() as mf {
+			log "Received MeasurementFragment " + mf.toString() at INFO;
+		}
+		
+		
+		//CearAllAlarms intercepting listeners.
+		
+		monitor.subscribe(FindAlarm.SEND_CHANNEL);
+		on all FindAlarm() as fa{
+			Alarm a := new Alarm;
+			a.source := fa.params["source"]; 
+			a.id := com.apama.cumulocity.Util.generateReqId().toString();
+			a.type := "c8y_TestAlarm 1";
+			a.time := currentTime;
+			a.text := "test alarm";
+			a.status := "ACTIVE";
+			a.severity := "WARNING";
+			send FindAlarmResponse(fa.reqId, a.id, a) to FindAlarmResponse.SUBSCRIBE_CHANNEL;
+			
+			Alarm b := new Alarm;
+			b.source := fa.params["source"]; 
+			b.id := com.apama.cumulocity.Util.generateReqId().toString();
+			b.type := "c8y_TestAlarm_2";
+			b.time := currentTime;
+			b.text := "test alarm 2";
+			b.status := "ACTIVE";
+			b.severity := "MAJOR";
+			send Fn.setFields(new FindAlarmResponse, [fa.reqId, b.id, b]) to FindAlarmResponse.SUBSCRIBE_CHANNEL;
+			
+			send Fn.setFields(new FindAlarmResponseAck, [fa.reqId, false, 200, ""]) to FindAlarmResponse.SUBSCRIBE_CHANNEL;
+		}
+
+		on all Alarm() as a{
+			log "Alarm updated " + a.toString() at INFO;
+		}
+	}
+}

@@ -1,0 +1,3 @@
+decimal value = -210E-1
+SetDecimalVal: -21 true
+GetDecAvg: 2.675

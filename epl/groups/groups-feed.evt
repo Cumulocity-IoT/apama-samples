@@ -1,0 +1,19 @@
+// $Copyright (c) 2010 Progress Software Corporation. All Rights Reserved.$
+// $Copyright (c) 2013 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+
+//
+// Event data feed for the groups sample application
+//
+
+SensorUpdate(0,55.3)
+SensorUpdate(1,55.3)
+SensorUpdate(2,55.3)
+SensorUpdate(3,55.3)
+SensorUpdate(4,55.3)
+SensorUpdate(0,55.4)
+SensorUpdate(0,55.2)
+SensorUpdate(0,55.5)
+SensorUpdate(2,102.3)
+SensorUpdate(0,65.1)
+SensorUpdate(0,75.8)

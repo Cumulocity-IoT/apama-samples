@@ -1,0 +1,70 @@
+/**
+ * An application to demonstrate Correlator metrics exposed to Prometheus
+ *
+ * $Copyright (c) 2018 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+ */
+package apamax.prometheus;
+
+using com.softwareag.connectivity.ConnectivityPlugins;
+using com.apama.correlator.Component;
+
+/** Internal event for sending to the chain */
+event MyEvent 
+{
+	integer id;
+}
+
+/**
+ * Monitor which interesting creates/manipulates metrics for exposure to Prometheus
+ */
+monitor Sample
+{
+	Component component;
+	integer listenerOneCount;
+
+	action onload()
+	{
+		monitor.subscribe("myChain");
+
+		// set up a listener which will simply track how many times it is completed
+		on all any() as a
+		{
+			// modify this user defined status item - it will automatically be exposed to Prometheus
+			component.setUserStatus("listener_one_received", listenerOneCount.toString());
+			listenerOneCount := listenerOneCount + 1;
+		}
+
+		// set up a listener which represents a contrived application
+		// this application will spin up a random amount of new contexts which will send messages
+		on all wait(4.0)
+		{
+			integer contexts := (8).rand();
+			integer i := 0;
+
+			while(i < contexts)
+			{
+				spawn sendMessage();
+				i := i + 1;
+			}
+		}
+
+		// signal that we are ready to receive events
+		ConnectivityPlugins.onApplicationInitialized();
+	}
+
+	action sendMessage()
+	{
+		listener l;
+		l := on all wait(2.0)
+		{
+			send MyEvent(integer.getUnique()) to "myChain";
+			// to make our application more interesting, contexts will randomly terminate
+			integer chance := (8).rand();
+			if (chance > 3)
+			{
+				l.quit();
+			}
+		}
+	}
+}

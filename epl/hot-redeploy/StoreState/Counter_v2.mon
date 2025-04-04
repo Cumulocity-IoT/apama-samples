@@ -1,0 +1,83 @@
+/**
+ * Version 2 of this Sample application.  Increments a decimal count by random increment on every Process() event.
+ *
+ * $Copyright (c) 2017 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+ */
+package com.apama.sample.redeploy.v2;
+
+using com.apama.sample.redeploy.Create;
+using com.apama.sample.redeploy.Process;
+
+// Event to store this monitors minimum state that will be saved to Memory Store
+event State {
+	string name;		// Name of this instance - same as v1
+	decimal count;		// Different type to v1
+	decimal increment;	// New state field
+}
+
+monitor Counter {
+	
+	// Version of this monitor
+	constant integer VERSION := 2;
+	
+	// Global state of this monitor instance
+	State state;
+
+	// ==== Boilerplate code for Upgrader support ====
+	
+	// Upgrade helper
+	com.apama.sample.upgrader.Upgrader upgrader;
+
+	action onload() {
+		
+		// Prepare the state store
+		upgrader.init("com.apama.sample.redeploy.Counter", state, VERSION, restoreState, ready);
+	}
+	
+	// Callback to restore a saved state
+	action restoreState(any restoreState) {
+		switch (restoreState) {
+			case com.apama.sample.redeploy.v1.State: {
+				// Restore state from v1
+				State newState := <com.apama.sample.redeploy.v2.State> upgrader.populateState(restoreState, new State);
+				// Extract the count (converting type to decimal)
+				newState.count := restoreState.count.toDecimal();
+				newState.increment := (1.0d).rand();
+				print newState.name +" state restored to " + newState.toString();
+				spawn startProcessing(newState);
+			}
+			
+			case State: {
+				spawn startProcessing(restoreState);
+			}
+		}
+	}
+	
+	// ==== Application Code ====
+
+	// Callback when upgrader is ready
+	action ready() {
+		// Processing create events
+		on all Create() as c {
+			spawn startProcessing(State(c.name, c.startCount.toDecimal(), (1.0d).rand()));
+		}
+	}
+
+	// Set up listeners for input and Upgrade events
+	action startProcessing(State stateParam) {
+
+		state := stateParam;
+		// ==== Boilerplate code to register for Upgrade events ====
+		upgrader.listenForUpgradesAndDie(state.name, state);
+
+		// Subscribe to the event channel
+		monitor.subscribe("DATA");
+			
+		// Listen for input events - different listener to v1
+		on all Process(> state.increment) {
+			state.count := state.count + state.increment;
+			print state.name+" count "+state.count.toString();
+		}
+	}
+}

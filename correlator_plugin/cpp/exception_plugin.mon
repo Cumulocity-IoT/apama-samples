@@ -1,0 +1,31 @@
+/**
+ *
+ * MonitorScript program to test the exception example plugin
+ *
+ * $Copyright (c) 2016, 2022 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+ *
+ */
+
+monitor ExceptionPlugin {
+
+	// Load the plugin
+	import "exception_plugin" as plugin;
+
+	float f := -3.7;
+
+   action onload {
+		spawn Exception();
+	}
+
+	action Exception()
+	{
+		// Catch the plugin thrown exception
+		try {
+			float rv := plugin.sqrt(f, "Sqrt of invalid number");
+		} catch (com.apama.exceptions.Exception e) {
+			log "Exception caught: " + e.toString() at INFO;
+		}
+		float rv := plugin.sqrt(f, "Uncaught exception");
+	}
+}

@@ -1,0 +1,26 @@
+/**
+ * Event used by this sample.
+ *
+ * $Copyright (c) 2017 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+ */
+package com.apama.sample.redeploy;
+
+// Example input event
+event Process {
+	decimal id;
+}
+
+// Event to create a new instance
+event Create {
+	string name;
+	integer startCount;
+}
+
+// Event to start the event simulator
+event StartSimulator {
+}
+
+// Event to stop the event simulator
+event StopSimulator {
+}

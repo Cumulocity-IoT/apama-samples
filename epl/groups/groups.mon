@@ -1,0 +1,116 @@
+/**
+ * Grouped aggregates in MonitorScript
+ *
+ * Monitors updates from temperature sensors and sends out alerts
+ * if the new temperature mean is more than some SDs above the mean for
+ * the last 10 minutes or exceeds a fixed threshold. The alert contains
+ * the most recent temperature reading and average.
+ *
+ * $Copyright (c) 2010 Progress Software Corporation. All Rights Reserved.$ 
+ * $Copyright (c) 2013-2015 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+ */
+
+/**
+ * Bring the sum aggregate into our namespace
+ */
+using com.apama.aggregates.mean;
+using com.apama.aggregates.stddev;
+
+/**
+ * Event definitions used in the sample
+ */
+event SensorUpdate
+{
+	integer id;
+	float temperature;
+}
+event SensorAverage
+{
+	integer id;
+	float mean;
+	float stddev;
+}
+event SensorAlert
+{
+	integer id;
+	float temperature;
+	float mean;
+}
+
+/**
+ * The monitor itself
+ */
+monitor Streams 
+{
+	/**
+	 * A constant threshold which is alerted regardless of the mean
+	 */
+	constant float MAX_TEMP_THRESHOLD := 100.0;
+
+	/**
+	 * A constant number of stddevs out before alerting
+	 */
+	constant float STDDEVS := 8.0;
+
+	/**
+	 * The sensor monitoring is all defined in here
+	 */
+	action onload()
+	{ 
+		// Used to construct the alerts to send out in
+		SensorAlert al;
+		
+		// A stream containing all the updates
+		stream<SensorUpdate> updates := all SensorUpdate();
+
+		/* This query calculates mean and stddev individually for each sensor.
+		 * 
+		 * The group-by clause splits up the events in the window into one group
+		 * for each value of su.id and calculates the mean and stddev of the
+		 * temperature. The resulting stream will be one event per id and includes
+		 * the ID of the sensor generating it.
+		 */
+		stream<SensorAverage> averages := 
+			from su in updates
+			within 600.0 
+			group by su.id 
+			select SensorAverage(su.id, mean(su.temperature), stddev(su.temperature));
+
+		// Delay the stream of averages by one so we can compare them.
+		stream<SensorAverage> prevaverages := from av in averages retain 1 select rstream av;
+
+		/* This query retains the last average for each sensor in the partitioned 
+		 * window and joins it with each new update. If the update temperature 
+		 * exceeds the static threshold then an alert is created and sent.
+		 */
+		from u in updates
+		join a in averages partition by a.id retain 1
+		on u.id equals a.id
+		where u.temperature > MAX_TEMP_THRESHOLD 
+		select SensorAlert(u.id, u.temperature, a.mean): al {
+			send al to "output";
+		}
+		
+		/* This query sends alerts when the average rises by more than a certain amount
+		 * in one go */
+		from a in 
+			/* The nested query retains the last average and previous average for each
+			 * sensor ID. When the current average's mean is more than some SD above
+			 * the old average an alert is generated to be joined into the outer query.
+			 */
+			(from cur in averages partition by cur.id retain 1
+			join prev in prevaverages partition by prev.id retain 1
+			on cur.id equals prev.id 
+			where prev.stddev != 0.0 and cur.mean > prev.mean+prev.stddev*STDDEVS
+			select SensorAlert(cur.id, 0.0, cur.mean))
+		/* This is joined with the most recent update for each sensor 
+		 * which allows the alert from the averages to be annotated 
+		 * with the temperature of the last update */
+		join u in updates partition by u.id retain 1
+		on a.id equals u.id
+		select SensorAlert(a.id, u.temperature, a.mean): al {
+			send al to "output";
+		}
+	}
+}

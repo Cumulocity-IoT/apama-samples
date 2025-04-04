@@ -1,0 +1,4 @@
+Exception caught: com.apama.exceptions.Exception("Sqrt of invalid number (in plugin method sqrt)","PluginException")
+Uncaught exception (in plugin method sqrt)
+ExceptionPlugin [2] Stack dump:
+ExceptionPlugin.Exception()

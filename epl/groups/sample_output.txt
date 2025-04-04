@@ -1,0 +1,2 @@
+SensorAlert(2,102.3,78.8)
+SensorAlert(0,65.1,57.3)

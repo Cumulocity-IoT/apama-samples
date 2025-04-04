@@ -1,0 +1,97 @@
+/**
+ *
+ * MonitorScript program to test the events example plugin
+ *
+ * $Copyright (c) 2016, 2022 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+ *
+ */
+
+event Simple
+{
+	string s;
+}
+
+event Complex
+{
+	integer i;
+	float f;
+	boolean b;
+	string s;
+}
+
+event Send 
+{
+	string type;
+}
+
+event Done {}
+event SetupDone {}
+
+monitor EventsPlugin {
+
+	// Load the plugin
+	import "events_plugin" as plugin;
+
+   action onload
+	{
+		// Subscribe the plugin
+		plugin.subscribe("channelPlugin");
+
+		on Send("simple") {
+			send Send("simple") to "channelA";
+		}
+
+		on Send("complex") {
+			send Send("complex") to "channelA";
+		}
+
+		on Done() {
+			log "Done." at INFO;
+			// Sending event to plugin
+			send Done() to "channelPlugin";
+		}
+		// Spawn listening contexts
+		spawn listener("contextB", context.current()) to context("contextB");
+		// Make sure that we don't ask the plugin to send events before we're ready
+		on SetupDone() as sd {
+			spawn sender("contextA", context.current()) to context("contextA");
+		}
+	}
+
+	action listener(string name, context main)
+	{
+		monitor.subscribe("channelB");
+
+		Simple simple;
+		on all Simple(): simple {
+			print name + " received Simple: " + simple.toString();
+			// Trigger the sending of the complex event
+			send Send("complex") to main;
+		}
+
+		Complex complex;
+		on all Complex(): complex {
+			print name + " received Complex: " + complex.toString();
+			plugin.sendDoneEvent(main);
+		}
+		send SetupDone() to main;
+	}
+
+	action sender(string name, context main)
+	{
+		monitor.subscribe("channelA");
+
+		on Send("simple") {
+			// Send simple events from the plugin
+			plugin.sendSimpleEvent("channelB");
+		}
+
+		on Send("complex") {
+			// Send complex events from the plugin
+			plugin.sendComplexEvent("channelB");
+		}
+
+		send Send("simple") to main;
+	}
+}

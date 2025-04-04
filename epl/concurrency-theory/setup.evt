@@ -1,0 +1,3 @@
+"BankDB", SetupAccount("customera", 100.0)
+"BankDB", SetupAccount("customerb", 100.0)
+"BankDB", SetupAccount("customerc", 100.0)

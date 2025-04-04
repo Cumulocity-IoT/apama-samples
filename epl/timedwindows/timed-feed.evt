@@ -1,0 +1,50 @@
+// $Copyright (c) 2010 Progress Software Corporation. All Rights Reserved.$
+// $Copyright (c) 2013 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+
+//
+// Event data feed for the timed windows sample application
+//
+
+BATCH 000
+Order("ibm", 1.0, 1200)
+Order("ibm", 1.2, 150)
+Order("msft", 15.0, 160)
+Order("ibm", 0.9, 160)
+BATCH 1200
+Order("msft", 15.2, 100)
+BATCH 1500
+Order("msft", 15.5, 780)
+Order("ibm", 1.5, 100)
+Order("ibm", 1.6, 3240)
+BATCH 2600
+Order("msft", 15.1, 106)
+BATCH 4000
+Order("msft", 14.8, 260)
+Order("ibm", 5.0, 2340)
+BATCH 5700
+Order("msft", 14.9, 600)
+Order("msft", 12.1, 120)
+Order("ibm", 2.0, 160)
+Order("ibm", 2.2, 1070)
+BATCH 6200
+Order("ibm", 2.8, 1020)
+Order("ibm", 1.0, 3600)
+Order("msft", 14.5, 300)
+Order("msft", 14.6, 840)
+BATCH 7000
+Order("ibm", 0.1, 170)
+BATCH 9000
+Order("ibm", 2.1, 620)
+Order("ibm", 3.1, 60)
+Order("ibm", 2.1, 1700)
+Order("ibm", 1.5, 2300)
+Order("ibm", 1.6, 500)
+BATCH 10000
+Order("ibm", 3.0, 6700)
+Order("ibm", 1.1, 120)
+Order("ibm", 1.4, 130)
+Order("ibm", 1.2, 260)
+Order("ibm", 1.0, 160)
+BATCH 12000
+Order("ibm", 1.2, 720)

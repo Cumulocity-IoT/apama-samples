@@ -1,0 +1,1 @@
+com.apama.samples.vwap.Match("IBM",1,.03,123.49,119.23)

@@ -1,0 +1,6 @@
+com.apama.latency.LatencyRate(1000, 1)
+MyEvent("A")
+MyEvent("B")
+MyEvent("C")
+MyEvent("D")
+MyEvent("E")

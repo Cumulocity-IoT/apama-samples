@@ -1,0 +1,62 @@
+<html>
+<head>
+	<title>CRUD Test</title>
+	<!--
+$Copyright (c) 2018 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+	-->
+<script type="text/javascript">
+<!--
+function add() {
+	var xhr = new XMLHttpRequest();
+	xhr.open("PUT", "/create", true);
+	xhr.setRequestHeader('Content-Type', 'application/json');
+	xhr.onload = function() {
+		alert(this.responseText);
+	}
+	var data = document.getElementById("add_data");
+	xhr.send(JSON.stringify(data.value));
+}
+function update() {
+	var xhr = new XMLHttpRequest();
+	var path = document.getElementById("update_path");
+	xhr.open("PUT", path.value, true);
+	xhr.setRequestHeader('Content-Type', 'application/json');
+	xhr.onload = function() {
+		alert(this.responseText);
+	}
+	var data = document.getElementById("update_data");
+	xhr.send(JSON.stringify(data.value));
+}
+function del() {
+	var xhr = new XMLHttpRequest();
+	var path = document.getElementById("delete_path");	
+	xhr.open("DELETE", path.value, true);
+	xhr.onload = function() {
+		alert(this.responseText);
+	}
+	xhr.send("");
+}
+//-->
+</script>
+</head>
+<body>
+	<h1>CRUD Test</h1>
+	<h2>Create</h2>
+	<form id="input">
+		<textarea cols="80" rows="20" name="data" id="add_data">Test Data</textarea><br/>
+		<input type="button" value="Create" onClick="add()"/>
+	</form>
+	<h2>Update</h2>
+	<form id="input">
+		<input type="text" value="/objects/" name="path" id="update_path" /><br/>
+		<textarea cols="80" rows="20" name="data" id="update_data">Test Data Updated</textarea><br/>
+		<input type="button" value="Update" onClick="update()"/>
+	</form>
+	<h2>Delete</h2>
+	<form id="input">
+		<input type="text" value="/objects/" name="path" id="delete_path" /><br/>
+		<input type="button" value="Delete" onClick="del()"/>
+	</form>
+</body>
+</html>

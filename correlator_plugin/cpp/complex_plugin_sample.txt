@@ -1,0 +1,15 @@
+intSeq avg: 4
+floatSeq std: 4.198168499476885
+boolSeq and: false
+strSeq strcat: Hello Complex Plugin
+intSeq[0] avg: 4
+intSeq[1] avg: 33
+intSeq[2] avg: 10
+4-1.4i
+2+3i
+6+1.6i
+new any type: (null)
+boolean type: boolean
+intSeqOne type: [integer,integer,integer]
+intSeqSeq type: [[integer,integer,integer],[integer,integer,integer,integer],[integer,integer]]
+anySeq type: [string,boolean,decimal,[integer,integer]]

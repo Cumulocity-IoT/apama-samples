@@ -1,0 +1,35 @@
+/**
+ *
+ * EPL program to test the decimal example plugin
+ *
+ * $Copyright (c) 2016, 2022 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+ *
+ */
+
+monitor DecimalPlugin {
+
+	// Load the plugin
+	import "decimal_plugin" as plugin;
+
+	// Define decimal
+	decimal d := -21.0d;
+
+	// Define sequence of decimals
+	sequence<decimal> decSeq; 
+
+   action onload {
+		boolean ret := plugin.SetDecimalVal(d);
+		log "SetDecimalVal: " + d.toString() + " " + ret.toString() at INFO;
+
+		// Load the sequence
+		decSeq.append(-2.4d);
+		decSeq.append(-5.4d);
+		decSeq.append(10.3d);
+		decSeq.append(8.2d);
+
+		// Call plugin method to compute average value 
+		decimal decVal := plugin.GetDecAvg(decSeq);
+		log "GetDecAvg: " + decVal.toString() at INFO;
+	}
+}

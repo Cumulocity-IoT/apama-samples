@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<apama-project>
+	<dependency>
+		<dependencyentry path="" kind="src"/>
+	</dependency>
+	<catalogs>
+	</catalogs>
+	<bundles>
+		<bundle file="ConnectivityPlugins-Common.bnd" origin-path="" origin="PRODUCT_CATALOG">
+			<instance name=""/>
+			<config-files>
+			</config-files>
+			<bundle-instance-files>
+			</bundle-instance-files>
+			<static-files>
+			</static-files>
+			<dashboard-files>
+			</dashboard-files>
+			<evt-files>
+			</evt-files>
+		</bundle>
+		<bundle file="HTTPServerConnectivity.bnd" origin-path="" origin="CONNECTIVITY_CATALOG">
+			<config-files>
+			</config-files>
+			<bundle-instance-files>
+				<file name="../bundles/HTTPServerConnectivity/@INSTANCE_NAME@.properties" timestamp="1542794786854"/>
+				<file name="../bundles/HTTPServerConnectivity/@INSTANCE_NAME@.yaml" timestamp="1542794786855"/>
+				<file name="../bundles/HTTPServerConnectivity/swagger_@INSTANCE_NAME@.json" timestamp="1542794786856"/>
+			</bundle-instance-files>
+			<static-files>
+			</static-files>
+			<dashboard-files>
+			</dashboard-files>
+			<evt-files>
+			</evt-files>
+		</bundle>
+	</bundles>
+</apama-project>

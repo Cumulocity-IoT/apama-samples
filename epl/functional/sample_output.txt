@@ -1,0 +1,8 @@
+com.apamax.epl.functional.SimpleFunctional [4] getResultImperative: 250
+com.apamax.epl.functional.SimpleFunctional [4] Functional: 250
+com.apamax.epl.functional.SimpleFunctional [4] Functional fluent: 250
+com.apamax.epl.functional.Simulator [5] Alarm updated com.apama.cumulocity.Alarm("3","c8y_TestAlarm 1","907751",1682506504.7,"test alarm","CLEARED","WARNING",0,{})
+com.apamax.epl.functional.Simulator [5] Alarm updated com.apama.cumulocity.Alarm("4","c8y_TestAlarm_2","907751",1682506504.7,"test alarm 2","CLEARED","MAJOR",0,{})
+com.apamax.epl.functional.Simulator [5] Alarm updated com.apama.cumulocity.Alarm("5","c8y_TestAlarm 1","907752",1682506504.7,"test alarm","CLEARED","WARNING",0,{})
+com.apamax.epl.functional.Simulator [5] Alarm updated com.apama.cumulocity.Alarm("6","c8y_TestAlarm_2","907752",1682506504.7,"test alarm 2","CLEARED","MAJOR",0,{})
+com.apamax.epl.functional.Simulator [5] Received MeasurementFragment com.apama.cumulocity.MeasurementFragment("","thresholdAverage","907751",1682506504.7,"thresholdAverage","thresholdAverageValue",2.5,"secs",{})

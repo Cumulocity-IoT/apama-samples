@@ -1,0 +1,19 @@
+The following directory does not exist and will therefore not be monitored: test
+Attempt to monitor the following directory .*/test2 with an interval of 5 seconds
+The current contents of: .*/test2 are: []
+The following directory does not exist and will therefore not be monitored: C:/test2
+
+...
+
+The following files have been added to .*/test2 : ["SampleEventsForPluginToRead.txt"]
+Received an event read from a new file in a monitored directory: apamax.filemonitoringsample.ExpectedEvt("My Event Test string")
+Received an event read from a new file in a monitored directory: apamax.filemonitoringsample.ExpectedEvt("Another event string")
+
+
+*Extra*
+
+If you proceed to delete a file you will see:
+The following files have been deleted from .*/test2 : ["SampleEventsForPluginToRead.txt"]
+
+If an additional engine_receive is set up on channel fileMonitoringReadEventsChannel then the following will be shown
+apamax.filemonitoringsample.ExpectedEvt()

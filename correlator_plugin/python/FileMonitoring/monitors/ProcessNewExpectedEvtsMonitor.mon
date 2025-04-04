@@ -1,0 +1,36 @@
+/**
+ * An monitor that is listening for expected events on a channel.
+ *
+ * $Copyright (c) 2018 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+ */
+package apamax.filemonitoringsample;
+
+/** Event expected to be in a new file that we are explicitly looking out for */
+event ExpectedEvt { string s;}
+
+/** 
+* This monitor subscribes to a chanel listening for certain expected events
+* 
+* In this application, any new txt files, containing events, that are added to 
+* monitored directories, may result in these events being received.  
+*/
+monitor ProcessNewExpectedEvtsMonitor 
+{
+
+	// The channel which any events translated from a new file (on a monitored directory) will be snet out on.
+	string readEventsChannel 		:= "fileMonitoringReadEventsChannel";
+	
+	action onload() 
+	{
+		// Listens for any ExpectedEvt events translated from the strings read in from a new file added to mintored directories.
+		// Anything that wants to monitor new events read in from new files should subscribe to this channel.		
+		// This could easily be extended to listen for other events on this channel, other events should subscribe to the same channel.		
+		monitor.subscribe(readEventsChannel);
+		
+		on all ExpectedEvt() as e
+		{
+			log "Received an event read from a new file in a monitored directory: " + e.toString() at INFO;
+		}	
+	}
+}

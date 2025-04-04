@@ -1,0 +1,81 @@
+// $Copyright (c) 2018-2020, 2024 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+
+package com.apamax.cumulocity.sample;
+
+using com.apama.cumulocity.ManagedObject;
+using com.apama.cumulocity.MeasurementFragment;
+using com.apama.cumulocity.Operation;
+using com.apama.cumulocity.Alarm;
+
+monitor Sample {
+
+	// Measurement type
+	constant string MEASUREMENT_TYPE := "c8y_Temperature";
+
+	// Measurement fragment and series
+	constant string FRAGMENT := "c8y_Temperature";
+	constant string SERIES := "T";
+
+	// Type and severity of alarm to be raised. 
+	// when a measurement breaches a threshold.
+	constant string ALARM_TYPE := "c8y_TestAlarm";
+	constant string ALARM_SEVERITY := "CRITICAL";
+	// The maximum temperature before we raise an alarm.
+	constant float MAX_TEMP := 50.0;
+	// Params dictionary for operation to toggle relay.
+	dictionary<string /*assetId*/, string /*relayState*/> assetIdRelayStateDictionary;
+	
+	action onload {
+	
+		listenForMeasurements();
+		
+		listenForAlarms();
+	}
+
+	/** Called whenever a new measurement is received
+	*   in case an alarm needs to be raised.
+	*/
+	action listenForMeasurements() {
+
+		//Subscribe to MeasurementFragment.SUBSCRIBE_CHANNEL to receive all available measurement fragments.
+		monitor.subscribe(MeasurementFragment.SUBSCRIBE_CHANNEL);
+		
+		on all MeasurementFragment(type=MEASUREMENT_TYPE, valueFragment=FRAGMENT, valueSeries=SERIES, value > MAX_TEMP) as fragment {
+			log "Received a temperature exceeding MAX_TEMP: " + fragment.toString() at WARN;
+			Alarm a := new Alarm;
+			a.source := fragment.source;
+			a.time := fragment.time;
+			a.status := "ACTIVE";
+			a.severity := ALARM_SEVERITY;
+			a.type := ALARM_TYPE;
+			a.text := "Received a temperature exceeding MAX_TEMP: " + fragment.toString();
+			send a to Alarm.SEND_CHANNEL;
+		}
+	}
+	
+	/** Called whenever a new matching alarm is received
+	*   and an operation has to be performed.
+	*   @param alarm The alarm giving rise to this operation.
+	*/
+	action listenForAlarms() {
+		monitor.subscribe(Alarm.SUBSCRIBE_CHANNEL);
+		on all Alarm(type=ALARM_TYPE) as alarm {
+			sendOperationsToDevice(alarm.source);
+		}
+	}
+	
+	// Toggle a relay on each alarm.
+	action sendOperationsToDevice(string assetId) {
+		dictionary<string, any> operations := new dictionary<string, any>;
+
+		string state := assetIdRelayStateDictionary.getOrDefault(assetId);
+		if state = "CLOSED" { state := "OPEN"; }
+		else { state := "CLOSED"; }
+		operations.add("c8y_Relay", {"relayState": state});
+		operations.add("description", "Relay State is " + state);
+		assetIdRelayStateDictionary.add(assetId, state);
+
+		send Operation("",assetId,"", operations) to Operation.SEND_CHANNEL;
+	}
+}

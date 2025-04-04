@@ -1,0 +1,68 @@
+/*
+ * Copyright (c) 2023 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+ * 
+ */
+
+package com.apamax.epl.functional;
+
+using com.apama.functional.Fn;
+using com.apama.functional.Functional;
+
+/**
+ * Start the sample
+ */
+event StartSimple {}
+
+/** This monitor is responsible for demonstrating the use of some simple functional operations from the new EPL functional library. */
+monitor SimpleFunctional {
+	
+	
+	action onload() {
+		on all StartSimple() {
+			// 1. Compare a calculation using simple imperative code ...
+			getResultImperative();
+			// 2. ... with the same calculation using the functional library.
+			getResultFunctional();
+		}
+	}
+
+	/**
+	 * Use imperative code to filter all the odd integers up to and including 9, 
+	 * multiply them by 10, and then add them all.
+	 */
+	action getResultImperative() {
+		sequence<integer> ints := [1,2,3,4,5,6,7,8,9];
+		integer result := 0;
+		integer i;
+		for i in ints {
+			if (i % 2 != 0){
+				result := result + (i * 10);
+			}
+		}	
+		
+		log "getResultImperative: " + result.toString() at INFO;
+	}
+	
+	/**
+	 * Use functional code to filter all the odd integers up to and including 9, 
+	 * multiply them by 10, and then add them all.
+	 */
+	action getResultFunctional() {
+		// This operation can be achieved in a single line of code using functions, but even moderately complex operations 
+		// such as this can be hard to read (and even harder to write) by simply nesting function calls within each other. 
+		// Instead ...
+		integer result := <integer>Fn.reduce((Fn.map(Fn.filter(Fn.range(1,10,1), Fn.odd), Fn.partial(Fn.mul, 10))), Fn.sum);
+		log "Functional: " + result.toString() at INFO;
+		
+		// ... this operation can be expressed more fluently and intelligibly by using the Functional wrapper event.
+		integer fluent_result := <integer> Functional(Fn.range(1,10,1))
+		    .filter(Fn.odd)
+		    .map(Fn.partial(Fn.mul, 10))
+		    .reduce(Fn.sum);
+
+		log "Functional fluent: " + result.toString() at INFO;
+	}
+}
+
+

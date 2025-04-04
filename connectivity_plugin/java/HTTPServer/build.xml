@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+	Copyright (c) 2016 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+	Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+-->
+<project default="jars" basedir="." name="Connectivity plugin build">
+
+	<presetdef name="javac">
+		<javac includeantruntime="false" />
+	</presetdef>
+
+	<property environment="env"/>
+	<property name="APAMA_HOME" location="${env.APAMA_HOME}"/>
+	<fail unless="env.APAMA_HOME" message="Please run the bin/apama_env script before attempting to build this sample."/>
+
+	<property name="apama-home-jar-dir" location="${env.APAMA_HOME}/lib"/>
+	<property name="output-dir" location="${user.dir}/Release"/>
+	<property name="build-dir" location="${user.dir}/build_work"/>
+	<tstamp/>
+
+	<path id="main-classpath">
+		<fileset dir="${apama-home-jar-dir}/">
+			<include name ="connectivity-plugins-api.jar"/>
+		</fileset>
+	</path>
+
+	<!-- Setup the build directory, our .class files will go here -->
+	<target name="setup">
+		<mkdir dir="${build-dir}"/>
+		<mkdir dir="${output-dir}"/>
+	</target>
+
+	<!-- Compiles .class files -->
+	<target name="compile" depends="setup">
+		<javac srcdir="./src/" destdir="${build-dir}" debug="true">
+			<compilerarg value="-Xlint"/>
+			<compilerarg value="-Werror"/>
+			<classpath refid="main-classpath"/>
+		</javac>
+	</target>
+
+	<!-- Make the jar for the HTTP server sample, including the index.html for GET requests -->
+	<target name="jars" depends="compile">
+		<copy file="./src/com/apama/samples/index.html" toFile="${build-dir}/com/apama/samples/index.html"/>
+		<jar jarfile="${output-dir}/httpserver-sample.jar">
+			<fileset dir="${build-dir}/"/>
+			<manifest>
+				<attribute name="Implementation-Title" value="HTTP Server Connectivity Plug-in Sample"/>
+				<attribute name="Implementation-Version" value="v1.0 (${TODAY})"/> 
+				<attribute name="Class-Path" value="${plugin-classpath.prop}"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<!-- Erase everything we built -->
+	<target name="clean">
+		<delete dir="${build-dir}"/>
+		<delete dir="${output-dir}"/>
+	</target>
+</project>

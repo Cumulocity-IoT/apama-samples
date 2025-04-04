@@ -1,0 +1,29 @@
+// $Copyright(c) 2013 Progress Software Corporation. All Rights Reserved.$ 
+// $Copyright (c) 2013-2018 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+package com.apama.latency;
+
+using com.apama.correlator.timeformat.TimeFormat;
+using com.apama.aggregates.mean;
+using com.apama.aggregates.stddev;
+using com.apama.aggregates.count;
+using com.apama.aggregates.min;
+using com.apama.aggregates.max;
+using com.apama.aggregates.percentile;
+
+
+monitor LatencyReceiver
+{
+	float cile := 0.95;
+	action onload()
+	{
+		on all LatencyResultConfig() as config {
+			cile := config.centile;
+		}
+		stream<float> offsets := from e in all _latency_end() from s in all _latency_start() retain 1 select TimeFormat.getMicroTime()-s.timestamp;
+		from o in offsets retain all select LatencyResult(mean(o), stddev(o), count(), min(o), max(o), percentile(o, cile)) as res
+		{
+			send res to "com.apama.latency.results";
+		}
+	}
+}

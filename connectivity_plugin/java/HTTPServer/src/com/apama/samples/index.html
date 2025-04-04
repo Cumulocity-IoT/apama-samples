@@ -1,0 +1,18 @@
+<html>
+	<head>
+		<title>HTTPServer connectivity plug-in sample</title>
+		<script type="text/javascript">
+			function clickSubmit() {
+				var payload = document.getElementById("payload")
+				var put = new XMLHttpRequest()
+				put.open("PUT", "/", true)
+				put.send(payload.value)
+				payload.value = ""
+			}
+		</script>
+	</head>
+	<body>
+		<input type="text" id="payload"/>
+		<input type="submit" value="Submit as message payload" id="submit" onclick="clickSubmit()"/>
+	</body>
+</html>

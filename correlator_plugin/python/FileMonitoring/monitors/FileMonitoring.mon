@@ -1,0 +1,131 @@
+/**
+ * An application to demonstrate use of a Python plug-in.
+ *
+ * $Copyright (c) 2018-2019 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+ * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
+ */
+package apamax.filemonitoringsample;
+
+using com.apama.exceptions.Exception;
+
+/** Control event requesting the EPL to start monitoring a directory. */
+event MonitorDirectory
+{
+	string searchDir;
+	integer interval;
+}
+
+/** Event sent by the Python plug-in with information on any additions or deletions of files to a monitored directory */
+event Changes
+{
+	string searchDir;
+	sequence<string> additions;
+	sequence<string> deleted;
+}
+
+monitor FileMonitoringMonitor 
+{
+
+	import "FileMonitoringPlugin" as plugin;
+	
+	// The channel that any changes to files within a monitored directory will be sent back on.
+	string monitoringChannel 		:= "fileMonitoringMonitoringChannel";
+
+	// The channel which any events translated from a new file (on a monitored directory) will be sent out on.
+	string readEventsChannel 		:= "fileMonitoringReadEventsChannel";
+	
+	// Listener for any changes on all monitored directories
+	dictionary<string, listener> changesListeners := new dictionary<string, listener>;
+
+	action onunload()
+	{
+		plugin.shutdown();
+	}
+	
+	action onload() 
+	{
+		MonitorDirectory md;
+		on all MonitorDirectory():md
+		{
+			boolean allowMonitoring := true;
+			string fullPath := "";
+			// Check if the searchDir contains a full path
+			if plugin.checkPathExists(md.searchDir)
+			{
+				// If the path exists in its own right then use that
+				fullPath := md.searchDir;
+			}
+			else
+			{
+				// Check if the dir is a relative directory, by appending the basePath
+				if plugin.checkPathExists(plugin.getBasePath() + "/" + md.searchDir)
+				{
+					fullPath := plugin.getBasePath() + "/" + md.searchDir;
+				}
+				else
+				{
+					// The directory does not exist even with the base path attached
+					log "The following directory does not exist and will therefore not be monitored: " + md.searchDir at ERROR;
+					allowMonitoring := false;
+				}
+			}
+			
+			if (allowMonitoring)
+			{
+				boolean success := plugin.monitorDirectory(fullPath, md.interval, monitoringChannel);
+				log "Attempt to monitor the following directory " + fullPath + " with an interval of " + md.interval.toString() + " seconds" at INFO;
+				sequence<string> current := plugin.getCurrentContents(fullPath);
+				log "The current contents of: " + fullPath + " are: " + current.toString() at INFO;
+				
+				listener changesListener := on all Changes(searchDir = fullPath) as c
+				{
+					try
+					{
+						if (c.additions.size() > 0)
+						{
+							log "The following files have been added to " + c.searchDir + " : " + c.additions.toString() at INFO;
+							// determine if any of the additions are event files with .txt that is expected to contain events
+							string addition;
+							for addition in c.additions
+							{
+								if addition.substring(addition.length()-4, addition.length()) = (".txt")
+								{
+									// attempt to read the txt file and the plug-in method will send the events found to a channel this monitor is subscribed to
+									sequence<string> lines := plugin.readFile(c.searchDir, addition);
+									try
+									{
+										string line;
+										for line in lines
+										{
+											integer delim := line.toString().find("(");
+											string eventName := line.toString().substring(0,delim);
+											string parseString := "any("+ eventName + ", " + line +")";
+											any evt := any.parse(parseString);
+											send evt to readEventsChannel;
+										}
+									}
+									catch(com.apama.exceptions.Exception e){
+										log "Exception caught: Invalid event found in the events file: "+e.toString() at ERROR;
+									}
+								}
+							}
+						}
+						if (c.deleted.size() > 0)
+						{
+							log "The following files have been deleted from " + c.searchDir + " : " + c.deleted.toString() at INFO;
+						}
+					}
+					catch (Exception e) 
+					{
+						log "Failed to process changes: "+e.toString() at ERROR;
+					}
+				}
+				// Allows for the ability to add the capability to stop listeners if we wish to 
+				changesListeners[fullPath] := changesListener;
+			}
+		}
+		
+		// After the listeners are set up subscribe to the channel MonitorDirectory events are expected on
+		monitor.subscribe(monitoringChannel);
+	}	
+}

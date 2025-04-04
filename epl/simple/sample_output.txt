@@ -1,0 +1,2 @@
+Tick("ibm",15)
+Tick("msft",15)
