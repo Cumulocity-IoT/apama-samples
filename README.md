@@ -1,6 +1,6 @@
 # apama-samples
 
-A github repo for apama samples. 
+This repository contains various examples and sample applications for the Apama streaming analytics platform.
 
 ### Licensing
 
@@ -18,22 +18,20 @@ Use the 'main' branch for the current release or switch to the appropriate branc
 
   First, ensure you have an install of the Apama engine; a free edition is available at the  Apama Community Edition from  https://download.cumulocity.com/Apama/. These samplese assume the user has familiarity with the basic structure of the install, more information of which can also be found on the community site.
 
-  Running and building of the samples require access to the Correlator and Apama command line tools.
-
-  To ensure that the environment is configured correctly for Apama, all the commands below should be executed from a shell or command prompt where the bin\apama_env script has been sourced.
+  Running of the samples require access to the Correlator and Apama command line tools. To ensure that the environment is configured correctly for Apama, the bin\apama_env script has to sourced.
 
 
 ### List of apama-samples
 
 This repository contains the below samples,
- - community
- - Connectivity-plugin
+ - connectivity-plugin
+ - correlator_plugin
  - cumulocity
  - docker
  - epl
  - performance
  - prometheus
- - studio
+ - pysys
 
 ### Running the sample
 
