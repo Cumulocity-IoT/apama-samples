@@ -1,0 +1,65 @@
+# Copyright (c) 2017-2018 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this 
+# file except in compliance with the License. You may obtain a copy of the License at
+# http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software distributed under the
+# License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+# either express or implied. 
+# See the License for the specific language governing permissions and limitations under the License.
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: memstore-data
+spec:
+  storageClassName: local-path
+  persistentVolumeReclaimPolicy: Recycle
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 1Gi
+  hostPath:
+    path: /data/memstore-data
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: memstore-data-claim
+spec:
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: memstore-sample
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: memstore
+  template:
+    metadata:
+      labels:
+        app: memstore
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      containers:
+        - name: memstore-sample
+          image: memstore-image
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 15903
+          volumeMounts:
+            - mountPath: /apama_work/MemoryStoreData
+              name: memorystore-data
+      volumes:
+        - name: memorystore-data
+          persistentVolumeClaim:
+            claimName: memstore-data-claim
