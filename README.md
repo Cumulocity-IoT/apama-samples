@@ -1,6 +1,6 @@
 # apama-samples
 
-This repository contains various examples and sample applications for the Apama streaming analytics platform.
+This repository contains various examples and sample applications for the Apama. 
 
 ### Licensing
 
@@ -27,11 +27,19 @@ This repository contains the below samples,
  - connectivity-plugin
  - correlator_plugin
  - cumulocity
- - docker
  - epl
  - performance
  - prometheus
  - pysys
+
+### Additional Sample Repositories
+
+Some Apama samples are maintained in separate Git repositories. You can explore them individually using the links below:
+
+- [apama-streaming-analytics-docker-samples](https://github.com/Cumulocity-IoT/apama-streaming-analytics-docker-samples)
+- [apama-streaming-analytics-connectivity-RegExCodec](https://github.com/Cumulocity-IoT/apama-streaming-analytics-connectivity-RegExCodec)
+- [apama-streaming-analytics-connectivity-CSVCodec](https://github.com/Cumulocity-IoT/apama-streaming-analytics-connectivity-CSVCodec) 
+- [apama-streaming-analytics-connectivity-FileTransport](https://github.com/Cumulocity-IoT/apama-streaming-analytics-connectivity-FileTransport)
 
 ### Running the sample
 
