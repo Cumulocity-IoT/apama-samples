@@ -1,6 +1,6 @@
 # apama-samples
 
-This repository contains various examples and sample applications for the Apama. 
+This repository contains various examples and sample applications for Apama. 
 
 ### Licensing
 
@@ -18,7 +18,8 @@ Use the 'main' branch for the current release or switch to the appropriate branc
 
   First, ensure you have an install of the Apama engine; a free edition is available at the  Apama Community Edition from  https://download.cumulocity.com/Apama/. These samplese assume the user has familiarity with the basic structure of the install, more information of which can also be found on the community site.
 
-  Running of the samples require access to the Correlator and Apama command line tools. To ensure that the environment is configured correctly for Apama, the bin\apama_env script has to sourced.
+  Running of the samples require access to the Correlator and Apama command line tools. To ensure that the environment is configured correctly for Apama, 
+  the bin/apama_env script has to sourced.
 
 
 ### List of apama-samples
@@ -31,6 +32,8 @@ This repository contains the below samples,
  - performance
  - prometheus
  - pysys
+
+> These samples are supported in version 26.x. All other samples supported in earlier releases can be found in their respective installation folders under **<APAMA_HOME>/samples**
 
 ### Additional Sample Repositories
 
