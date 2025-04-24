@@ -8,7 +8,7 @@
 # either express or implied. 
 # See the License for the specific language governing permissions and limitations under the License.
 
-ARG APAMA_VERSION=26
+ARG APAMA_VERSION=26-lts
 ARG APAMA_BUILDER=public.ecr.aws/apama/apama-builder:${APAMA_VERSION}
 ARG APAMA_IMAGE=public.ecr.aws/apama/apama-correlator:${APAMA_VERSION}
 

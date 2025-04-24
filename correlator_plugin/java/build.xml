@@ -2,7 +2,7 @@
 <project default="jars" basedir=".">
 
 	<property environment="env"/>
-	<fail unless="env.APAMA_LIBRARY_VERSION" message="Please run the bin/apama_env script before attempting to build this sample."/>
+	<fail unless="env.APAMA_HOME" message="Please run the bin/apama_env script before attempting to build this sample."/>
 
 	<property name="apama-home-jar-dir" location="${env.APAMA_HOME}/lib"/>
 	<property name="output-dir" location="${user.dir}"/>

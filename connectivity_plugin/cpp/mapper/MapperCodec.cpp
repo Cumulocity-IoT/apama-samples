@@ -270,7 +270,7 @@ MapperCodec::MapperCodec(const CodecConstructorParameters &params)
 			if ("true" == ignoreControlMessagesValue) {
 				ignoreControlMessages = true;
 			} else if ("false" != ignoreControlMessagesValue){
-				throw std::runtime_error("Unknown value in map for allowMissing. It should be either 'true' or 'false'");
+				throw std::runtime_error("Unknown value in map for ignoreControlMessages. It should be either 'true' or 'false'");
 			}
 			continue;
 		}
