@@ -1,6 +1,6 @@
-# apama-samples
+# Apama Samples
 
-This repository contains various examples and sample applications for Apama. 
+This repository contains the main samples for building Apama applications, plug-ins and PySys tests. 
 
 ### Licensing
 
@@ -12,7 +12,7 @@ This project is licensed under the Apache 2.0 license - see https://www.apache.o
 
 Use the 'main' branch for the current release or switch to the appropriate branch for Long-term support (LTS) / Maintenance releases.
 
-### Prerquisites
+### Prerequisites
   
   To run the apama-samples, a full installation of the latest Apama is required. If you do not already have access, then you can download the Apama Community Edition from  https://download.cumulocity.com/Apama/ (shortly after the official Apama release date).
 
@@ -22,9 +22,9 @@ Use the 'main' branch for the current release or switch to the appropriate branc
   the bin/apama_env script has to sourced.
 
 
-### List of apama-samples
+### Contents
 
-This repository contains the below samples,
+This repository contains following samples:
  - connectivity-plugin
  - correlator_plugin
  - cumulocity
@@ -33,7 +33,9 @@ This repository contains the below samples,
  - prometheus
  - pysys
 
-> These samples are supported in version 26.x. All other samples supported in earlier releases can be found in their respective installation folders under **<APAMA_HOME>/samples**
+Each sample has its own readme to explaining how to run the sample.
+
+These samples are provided for Apama version 26.x and later. For earlier releases, see the `Apama/samples` folder in your installation directory. 
 
 ### Additional Sample Repositories
 
@@ -44,7 +46,4 @@ Some Apama samples are maintained in separate Git repositories. You can explore 
 - [apama-streaming-analytics-connectivity-CSVCodec](https://github.com/Cumulocity-IoT/apama-streaming-analytics-connectivity-CSVCodec) 
 - [apama-streaming-analytics-connectivity-FileTransport](https://github.com/Cumulocity-IoT/apama-streaming-analytics-connectivity-FileTransport)
 
-### Running the sample
-
- Each sample has its own README to instruct how to run the sample.
 
