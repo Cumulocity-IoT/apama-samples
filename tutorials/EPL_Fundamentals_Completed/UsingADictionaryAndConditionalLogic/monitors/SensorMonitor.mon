@@ -1,0 +1,41 @@
+// $Copyright(c) 2009-2010 Progress Software Corporation (PSC). All rights reserved.$
+// $Copyright (c) 2013-2018 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+
+//*****************************************************************************
+// Title:         Tutorial - SensorMonitor.mon
+// Description:   Monitor sensors for Temperature & Pressure violations.
+// Dependencies:  None
+//*****************************************************************************
+
+monitor SensorMonitor {
+
+    action onload () {
+		
+		// Spawn a monitor instance for each sensor
+		on all AddSensor() as sensor {
+			spawn monitorSensor(sensor.sensorId, sensor.targetTemperature, sensor.targetPressure) to context (sensor.sensorId);
+		}
+	}
+
+	action monitorSensor (string sensorId, float targetTemperature, float targetPressure) {
+
+		monitor.subscribe("Factory1");
+
+		// Temperature high rule
+		on all Temperature (sensorId = sensorId, temperature >= targetTemperature * 1.10) as temperature {
+			print "TEMP_HIGH: " + temperature.toString();
+		}
+		
+		// Pressure high rule
+		on all Pressure (sensorId = sensorId, pressure >= targetPressure * 1.10) as pressure {
+			print "PRESSURE_HIGH: " + pressure.toString();
+		}
+
+		// Temporal rule, temperature high followed by pressure high
+		on all Temperature (sensorId = sensorId, temperature >= targetTemperature * 1.02) as temperature -> 
+		       Pressure (sensorId = sensorId, pressure >= targetPressure * 1.05) as pressure within (3.0) {
+			send Alert("TEMP_PRESSURE_RISE", sensorId , temperature.temperature, pressure.pressure) to "AlertManager";
+		}
+	}
+}

@@ -1,0 +1,19 @@
+// $Copyright(c) 2009-2010 Progress Software Corporation (PSC). All rights reserved.$
+// $Copyright (c) 2013-2014, 2016 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+
+//*****************************************************************************
+// Title:         Tutorial - AlertManager.mon
+// Description:   Tracks alerts and emits alerts to clients.
+// Dependencies:  None
+//*****************************************************************************
+
+monitor AlertManager {
+	
+	action onload () {
+		monitor.subscribe("AlertManager");
+		on all Alert() as a {
+			send a to "AlertChannel";
+		}
+	}
+}

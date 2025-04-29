@@ -1,0 +1,44 @@
+// $Copyright(c) 2009-2010 Progress Software Corporation (PSC). All rights reserved.$
+// $Copyright (c) 2015 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+
+//*****************************************************************************
+// Title:         Tutorial - SensorMonitorEvents.mon
+// Description:   Event definitions for sensor monitor.
+// Dependencies:  None
+//*****************************************************************************
+
+/**
+ * Input temperature reading
+ */
+event Temperature {
+    string sensorId;
+    float temperature; 
+}
+
+/**
+ * Input pressure reading
+ */
+event Pressure {
+    string sensorId;
+    float pressure;  
+}
+
+/** 
+ * Sensor configuration
+ */
+event AddSensor {
+    string sensorId;
+    float targetTemperature;
+    float targetPressure;
+}
+
+/**
+ * Output alert
+ */
+event Alert  {
+    string type;
+    string sensorId;
+    float temperature;
+    float pressure;
+}

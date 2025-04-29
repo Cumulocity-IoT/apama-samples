@@ -1,0 +1,30 @@
+// $Copyright(c) 2009-2010 Progress Software Corporation (PSC). All rights reserved.$
+// $Copyright (c) 2013-2014, 2016 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+
+//*****************************************************************************
+// Title:         Tutorial - AlertManager.mon
+// Description:   Tracks alerts and sends alerts to clients.
+// Dependencies:  None
+//*****************************************************************************
+
+monitor AlertManager {
+	
+	dictionary <string, Alert> alerts;
+	
+	action onload () {
+		monitor.subscribe("AlertManager");
+		on all Alert() as a {
+			
+			// If no alerts for sensor or alert with higher temperature or pressure
+			// then add/update alerts and send alert to clients. There will only
+			// be one alert per sensor in alerts at one time.
+			if not alerts.hasKey(a.sensorId) or
+				a.temperature > alerts[a.sensorId].temperature or 
+				a.pressure > alerts[a.sensorId].pressure {
+					alerts.add(a.sensorId, a);
+					send a to "AlertChannel";
+			}
+		}
+	}
+}

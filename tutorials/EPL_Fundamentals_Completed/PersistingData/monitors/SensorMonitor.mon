@@ -1,0 +1,78 @@
+// $Copyright(c) 2009-2010 Progress Software Corporation (PSC). All rights reserved.$
+// $Copyright (c) 2013-2018 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+
+//*****************************************************************************
+// Title:         Tutorial - SensorMonitor.mon
+// Description:   Monitor sensors for Temperature & Pressure violations.
+// Dependencies:  None
+//*****************************************************************************
+
+monitor SensorMonitor {
+
+	action onload () {
+		
+		// Spawn a monitor instance for each sensor
+		on all AddSensor() as sensor {
+			spawn monitorSensor(sensor.sensorId, sensor.targetTemperature, sensor.targetPressure ,context.current()) to context (sensor.sensorId);
+		}
+		// Create Data View for sensor data
+		com.apama.dataview.DataViewAddDefinition add := new com.apama.dataview.DataViewAddDefinition;
+		add.dvName := "Sensors";
+		add.dvDisplayName := "Sensors";
+		add.fieldNames := ["sensorId","meanTemperature","meanPressure","temperature","pressure"];
+		add.fieldTypes := ["string","float","float","float","float"];
+		add.keyFields := ["sensorId"];
+		route add;	
+	}
+
+	action monitorSensor (string sensorId, float targetTemperature, float targetPressure ,context mainContext) {
+
+		monitor.subscribe("Factory1");
+
+		// Temperature high rule
+		on all Temperature (sensorId = sensorId, temperature >= targetTemperature * 1.10) as temperature {
+			print "TEMP_HIGH: " + temperature.toString();
+		}
+		
+		// Pressure high rule
+		on all Pressure (sensorId = sensorId, pressure >= targetPressure * 1.10) as pressure {
+			print "PRESSURE_HIGH: " + pressure.toString();
+		}
+
+		// Temporal rule, temperature high followed by pressure high
+		on all Temperature (sensorId = sensorId, temperature >= targetTemperature * 1.02) as temperature ->  
+		       Pressure (sensorId = sensorId, pressure >= targetPressure * 1.05) as pressure within (3.0) {
+			send Alert("TEMP_PRESSURE_RISE", sensorId, temperature.temperature, pressure.pressure) to "AlertManager";
+		}
+
+		// Add sensor to Data View
+		com.apama.dataview.DataViewAddItem item := new com.apama.dataview.DataViewAddItem;
+		item.dvName := "Sensors";
+		item.owner := "*";
+		item.fieldValues := [sensorId, "0.0", "0.0", "0.0", "0.0"];
+		send item to mainContext;
+		
+		//Create the DataView Update object
+		com.apama.dataview.DataViewUpdateItemDelta update := new com.apama.dataview.DataViewUpdateItemDelta;
+		update.dvName := "Sensors";
+		update.dvItemId := -1;
+		
+		// Update Data View on all Temperature and Pressure events for sensor
+		on all Temperature(sensorId = sensorId) as temperature{
+			update.timeStamp := currentTime;
+			update.fieldValues := {
+				0:sensorId,1:targetTemperature.toString(),3:temperature.temperature.toString()
+			};
+			send update to mainContext;	
+		}
+		
+		on all Pressure(sensorId = sensorId) as pressure{
+			update.timeStamp := currentTime;
+			update.fieldValues := {
+				0:sensorId,2:targetPressure.toString(),4:pressure.pressure.toString()
+			};
+			send update to mainContext;
+		}
+	}
+}

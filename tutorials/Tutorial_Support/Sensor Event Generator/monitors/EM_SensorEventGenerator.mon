@@ -1,0 +1,80 @@
+// $Copyright(c) 2009-2010 Progress Software Corporation (PSC). All rights reserved.$
+// $Copyright (c) 2013,2015 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+
+//*****************************************************************************
+// Title:         SensorEventGenerator
+// Description:   Generates AddSensor and SensorReading events.
+// Dependencies:  None
+//*****************************************************************************
+
+monitor EM_SensorEventGenerator {
+
+	// Change this value to increase or decrease the number of sensors
+	integer numberOfSensorToGenerate := 100;
+	
+	action onload() {
+		
+		on AddSensor() {
+			// Create an instance of SensorManagement when load is complete as indicated
+			// by the first AddSensor event.
+			route com.apama.scenario.Create("Scenario_SensorManagement", -1, "*", new sequence<string>);
+	
+			integer i := 1;
+			while i <= numberOfSensorToGenerate {
+				spawn generator(i);
+				i := i + 1;
+			}
+		}
+	}
+	
+	action generator (integer i) {
+		integer random;
+		
+		string sensorId := "S" + i.toString();
+		float temperature;
+		float pressure;
+		float meanTemperature;
+		float meanPressure;
+
+		// Generate mean temperature for sensor. 50 < temperature < 100
+		random := 50;
+		meanTemperature := 50.0 + random.rand().toFloat();
+
+		// Generate mean pressure for sensor. 600 < pressure < 800
+		random := 200;
+		meanPressure := 600.0 + random.rand().toFloat();
+	
+		// Route senor definition
+		//print ("ADD " + sensorId + " " + meanTemperature.toString() + " " + meanPressure.toString());
+		route AddSensor (sensorId, meanTemperature, meanPressure);
+		
+		// Set initial temperature value. meanTemperature - (5:30)
+		temperature := meanTemperature;
+
+		// Set initial pressure value. meanPressure - (30:100)
+		pressure := meanPressure;
+		
+		// Randomly fluctuate weather values for location every 1 second
+		float timeRandom := 1.0;
+		float waitTime := 0.5 + timeRandom.rand(); 
+		//print "WAIT " + waitTime.toString();
+		on all wait (waitTime) {
+			
+			// Random temperature move
+			random := 5;
+			temperature := (temperature - 2.0) + random.rand().toFloat();
+			if (temperature < 0.0)     {temperature := 0.0;} 
+
+			// Random pressure move
+			random := 11;
+			pressure := (pressure - 5.0) + random.rand().toFloat();
+			if (pressure < 0.0)   {pressure := 0.0;} 
+			
+			// Send sensor reading
+			//print "READING " + sensorId + " " + temperature.toString() + " " + pressure.toString();
+			route Temperature (sensorId, temperature);
+			route Pressure (sensorId, pressure);
+		}
+	}
+}

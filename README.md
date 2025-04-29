@@ -32,6 +32,7 @@ This repository contains following samples:
  - performance
  - prometheus
  - pysys
+ - tutorials
 
 Each sample has its own readme to explaining how to run the sample.
 

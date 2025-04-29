@@ -1,0 +1,19 @@
+// $Copyright(c) 2009-2010 Progress Software Corporation (PSC). All rights reserved.$
+// $Copyright (c) 2013-2018 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+
+//*****************************************************************************
+// Title:         Tutorial - SensorMonitor.mon
+// Description:   Monitor sensors for Temperature & Pressure violations.
+// Dependencies:  None
+//*****************************************************************************
+
+monitor SensorMonitor {
+	
+	action onload () {
+		monitor.subscribe("Factory1");
+		on all Temperature (sensorId="S001") as temperature {
+			print temperature.toString();
+		}
+	}
+}

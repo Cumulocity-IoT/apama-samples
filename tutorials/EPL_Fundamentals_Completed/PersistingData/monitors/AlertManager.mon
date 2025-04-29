@@ -1,0 +1,75 @@
+// $Copyright(c) 2009-2010 Progress Software Corporation (PSC). All rights reserved.$
+// $Copyright (c) 2013-2014, 2016-2017 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+// Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
+
+//*****************************************************************************
+// Title:         Tutorial - AlertManager.mon
+// Description:   Tracks alerts and sends alerts to clients.
+// Dependencies:  None
+//*****************************************************************************
+
+using com.apama.memorystore.Storage;
+using com.apama.memorystore.Store;
+using com.apama.memorystore.Table;
+using com.apama.memorystore.Schema;
+
+monitor AlertManager {
+
+	Store store;
+	Table alerts;
+	
+	action onload () {
+		monitor.subscribe("AlertManager");
+		integer id := Storage.prepareOrCreate("tutorial", "temp/apama_tutorial.dat");
+		on com.apama.memorystore.Finished(id,*,*) as f onStorePrepared(f);
+	}
+
+	action onStorePrepared(com.apama.memorystore.Finished f) {
+		if not f.success { 
+			log "Failed to prepare store: " + f.status at ERROR;
+			die;
+		}
+
+		store := Storage.open("tutorial");
+
+ 		Schema schema := Schema.schemaFromAny(new Alert);
+		schema.exposePersistentView := true;
+
+		integer id := store.prepare("alerts", schema);
+ 		on com.apama.memorystore.Finished(id,*,*):f onTablePrepared(f);
+	}
+
+	action onTablePrepared(com.apama.memorystore.Finished f) {
+ 		if not f.success { 
+			log "Failed to prepare table: " + f.status at ERROR;
+			die;
+		}
+
+		alerts := store.open("alerts");
+
+		on all Alert() as a {
+			// If no alerts for sensor or alert with higher temperature or pressure
+			// then add/update alerts and send alert to clients. There will only
+			// be one alert per sensor in alerts at one time.
+ 			com.apama.memorystore.Row row := alerts.get(a.sensorId);
+			if not row.inTable() or
+ 				a.temperature > row.getFloat("temperature") or 
+				a.pressure > row.getFloat ("pressure") {
+				row.setAll(a);
+				row.commit();
+				send a to "AlertChannel";
+			}
+			
+			integer id := store.persist();
+			on com.apama.memorystore.Finished(id,*,*):f onPersisted(f);
+		}
+		
+	}
+	action onPersisted(com.apama.memorystore.Finished f) {
+		if not f.success { 
+			log "Failed to persist store: " + f.status at ERROR;
+			die;
+		}
+	}
+
+}
