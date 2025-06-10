@@ -18,11 +18,11 @@
   Sample contains:
 
     README.md                           This file
-    events/Start.evt                    Events that will trigger each of the samples.
-    monitors/SimpleFunctional.mon       The simple sample EPL application.
-    monitors/AverageCalc.mon            The average calculation of measurement values sample.
-    monitors/ClearAllAlarms.mon         The sample that shows how to clear all alarms for a given Cumulocity device.
-    monitors/Simulator.mon              This monitor will intercept calls to Cumulocity to avoid any setup in order to run these samples.
+    src/Start.evt                       Events that will trigger each of the samples.
+    src/SimpleFunctional.mon            The simple sample EPL application.
+    src/AverageCalc.mon                 The average calculation of measurement values sample.
+    src/ClearAllAlarms.mon              The sample that shows how to clear all alarms for a given Cumulocity device.
+    src/Simulator.mon                   This monitor will intercept calls to Cumulocity to avoid any setup in order to run these samples.
     sample_output.txt                   Reflects what the output should be in the correlator log from all three samples.
 
 

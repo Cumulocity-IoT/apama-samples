@@ -45,11 +45,11 @@
       2. Inject the MemoryStore EPL and the EPL for this sample using:
 
          > engine_inject "$APAMA_HOME/monitors/data_storage/MemoryStore.mon"
-         > engine_inject monitors/SimpleMemStore.mon
+         > engine_inject src/SimpleMemStore.mon
 
       3.  Send the event file to the correlator to initiate MemoryStore operations:
          
-         > engine_send events/ConfigureSample.evt
+         > engine_send src/ConfigureSample.evt
          
    Once the above steps have been performed, the Correlator log file will 
    contain a series of messages showing interactions with the MemoryStore.

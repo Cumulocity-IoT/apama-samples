@@ -15,7 +15,7 @@
   Sample files:
 
     README.md                              This file
-     BasicSample.mon                        EPL for communicating with Cumulocity IoT
+    BasicSample.mon                        EPL for communicating with Cumulocity IoT
     CumulocityIoTREST.properties           Configuration file connecting to Cumulocity IoT platform using REST interface
     CumulocityNotifications2.properties    Configuration file connecting to Cumulocity IoT platform using Notifications 2.0
 
@@ -89,7 +89,7 @@
    * Select the newly created Simulator,
    * Select the Instructions tab,
    * If you want to generate alarms, modify some of the Create custom measurement steps for the
-     simulator to generate values greater than MAX_TEMP that is defined in monitors/BasicSample.mon,
+     simulator to generate values greater than MAX_TEMP that is defined in src/BasicSample.mon,
    * To view the relay being toggled on the device, switch to the simulator's Supported operations tab,
    * Click on Add custom operation and enter "c8y_Relay" for the operation type.
    * Select Simulators in the Navigator, 
