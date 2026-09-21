@@ -4,14 +4,13 @@
 import com.apama.epl.plugin.Context;
 import com.apama.epl.plugin.Correlator;
 
+/**
+	Demonstrates passing contexts around and sending events
+*/
 @com.apama.epl.plugin.annotation.ApplicationJar(
 	name = "SendPluginJar",
 	classpath = ""
 )
-
-/**
-	Demonstrates passing contexts around and sending events
-*/
 @com.apama.epl.plugin.annotation.EPLPlugin(
 	name="SendPlugin",
 	description="A test plugin"

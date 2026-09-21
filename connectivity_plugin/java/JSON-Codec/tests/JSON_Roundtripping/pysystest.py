@@ -8,7 +8,7 @@ __pysys_purpose__ = r""" Pass the same messages through the codec in both direct
 
 __pysys_authors__ = "sample"
 
-# Copyright (c) 2016, 2020-2022 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors. 
+# Copyright (c) 2016-present Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors. 
 # Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
 
 from pysys.constants import *

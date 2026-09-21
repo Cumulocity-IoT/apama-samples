@@ -5,7 +5,7 @@
  * - sending events from the plugin to the correlator by specifying the context or channel name
  * - receiving events from the correlator by registering an event handler
  *
- * $Copyright (c) 2016, 2022 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+ * Copyright (c) 2016-present Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.
  * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
  * 
  */

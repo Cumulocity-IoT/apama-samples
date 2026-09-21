@@ -1,7 +1,7 @@
 /**
  * Title:        MapperCodec.cpp
  * Description:  Mapper Codec
- * $Copyright (c) 2016-2018, 2020-2023 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+ * Copyright (c) 2016-present Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.
  * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
  */
 

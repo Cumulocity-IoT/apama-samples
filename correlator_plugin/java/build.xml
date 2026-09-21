@@ -23,6 +23,10 @@
 				classpath="${apama-home-jar-dir}/ap-correlator-extension-api.jar"
 			>
 				<compilerarg value="-Xlint"/>
+				<!-- Java 23 made -proc:none the javac default. The @EPLPlugin/@ApplicationJar
+				     annotation processor has to run, or the jar has no plug-in descriptor and the
+				     correlator rejects it with "Cannot find an EPL plug-in descriptor in this jar". -->
+				<compilerarg value="-proc:full"/>
 				<compilerarg value="-Werror"/>
 			</javac>
 

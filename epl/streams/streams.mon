@@ -5,8 +5,7 @@
  * average price over the last 10 events. If this average changes more than a
  * threshold then it sends an event containing the price difference
  *
- * $Copyright (c) 2010,2012 Progress Software Corporation. All Rights Reserved.$
- * $Copyright (c) 2013-2016 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+ * Copyright (c) 2010-present Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.
  * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
  */
 

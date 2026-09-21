@@ -13,7 +13,7 @@ __pysys_modes__            = r""" lambda helper: helper.inheritedModes + [{'mode
 # Warning from pysystest.xml->pysystest.py conversion: {w}
 
 # Concurrency theory sample
-# Copyright (c) 2017 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors. 
+# Copyright (c) 2017-present Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors. 
 # Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
 
 from pysys.constants import *

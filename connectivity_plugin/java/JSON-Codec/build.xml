@@ -43,6 +43,11 @@
 	<target name="compile" depends="setup">
 		<javac srcdir="./src/" destdir="${build-dir}/codec" debug="true">
 			<compilerarg value="-Xlint"/>
+			<!-- this-escape is new in Java 21 and fires on the transport/codec pattern these
+			     samples exist to demonstrate - a plug-in calling the inherited
+			     getStatusReporter() while constructing itself - so it is not something the
+			     sample should be contorted to avoid. -->
+			<compilerarg value="-Xlint:-this-escape"/>
 			<compilerarg value="-Werror"/>
 			<classpath refid="main-classpath"/>
 		</javac>

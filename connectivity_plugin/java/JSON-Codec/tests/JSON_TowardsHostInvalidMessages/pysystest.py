@@ -7,7 +7,7 @@ __pysys_purpose__ = r""" Check that malformed messages result in error messages,
 
 __pysys_authors__ = "sample"
 
-# Copyright (c) 2016-2017, 2020-2022 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors. 
+# Copyright (c) 2016-present Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors. 
 # Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
 
 from pysys.constants import *
@@ -39,7 +39,7 @@ class PySysTest(ApamaHelper, pysys.basetest.BaseTest):
 
 		# check that valid messages can be parsed after failures
 		self.assertGrep('test-correlator.log', 
-			expr="UnitTestHarness output.*Safely handling empty payloads.*\{\}")
+			expr=r"UnitTestHarness output.*Safely handling empty payloads.*\{\}")
 
 		# check that valid messages can be parsed after failures
 		self.assertGrep('test-correlator.log', 

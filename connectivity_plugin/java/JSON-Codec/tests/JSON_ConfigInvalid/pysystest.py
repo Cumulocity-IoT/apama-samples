@@ -6,7 +6,7 @@ __pysys_purpose__ = r""" Check that invalid plug-in configuration results in app
 
 __pysys_authors__ = "sample"
 
-# Copyright (c) 2016, 2020-2021 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors. 
+# Copyright (c) 2016-present Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors. 
 # Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
 
 from pysys.constants import *

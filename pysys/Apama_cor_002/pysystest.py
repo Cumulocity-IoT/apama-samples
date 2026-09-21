@@ -7,7 +7,7 @@ __pysys_purpose__ = r""" Demonstrates sending events into a correlator and use o
 
 __pysys_authors__ = "sample"
 
-# Copyright (c) 2015-2016, 2018-2022 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.
+# Copyright (c) 2015-present Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.
 # Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
 
 import pysys.basetest, pysys.mappers

@@ -9,8 +9,7 @@ package com.apama.samples.vwap;
  * event matching.  For simplification, it only allows one VWAP comparison to
  * be active for the same stock at any one time.
  *
- * $Copyright(c) 2002 - 2006, 2009-2010 Progress Software Corporation. All Rights Reserved.$ 
- * $Copyright (c) 2013-2015 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+ * Copyright (c) 2002-present Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.
  * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
  */
 

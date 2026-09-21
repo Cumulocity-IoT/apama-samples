@@ -1,7 +1,7 @@
 '''
 	A simple python plugin that has a method that can generate a UUID and return it to EPL
  
- 	$Copyright (c) 2018 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+ 	Copyright (c) 2018-present Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors. 
  	Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
  
 @author: SGOL

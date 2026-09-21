@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-	Copyright (c) 2016 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+	Copyright (c) 2016-present Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors. 
 	Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
 -->
 <project default="jars" basedir="." name="Connectivity plugin build">
@@ -34,6 +34,11 @@
 	<target name="compile" depends="setup">
 		<javac srcdir="./src/" destdir="${build-dir}" debug="true">
 			<compilerarg value="-Xlint"/>
+			<!-- this-escape is new in Java 21 and fires on the transport/codec pattern these
+			     samples exist to demonstrate - a plug-in calling the inherited
+			     getStatusReporter() while constructing itself - so it is not something the
+			     sample should be contorted to avoid. -->
+			<compilerarg value="-Xlint:-this-escape"/>
 			<compilerarg value="-Werror"/>
 			<classpath refid="main-classpath"/>
 		</javac>

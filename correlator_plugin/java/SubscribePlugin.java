@@ -4,14 +4,13 @@
 import com.apama.epl.plugin.Correlator;
 import com.apama.epl.plugin.EventHandler;
 
+/**
+	Demonstrates a plugin subscribing to channels to receive events
+*/
 @com.apama.epl.plugin.annotation.ApplicationJar(
 	name = "SubscribePluginJar",
 	classpath = ""
 )
-
-/**
-	Demonstrates a plugin subscribing to channels to receive events
-*/
 @com.apama.epl.plugin.annotation.EPLPlugin(
 	name="SubscribePlugin",
 	description="A test plugin"

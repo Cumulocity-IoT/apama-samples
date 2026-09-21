@@ -4,7 +4,7 @@
  * Listens for events from transport, then sends an event to the transport
  * for that request to report the result.
  * 
- * $Copyright (c) 2017-2018 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+ * Copyright (c) 2017-present Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors. 
  * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
  */
 using com.softwareag.connectivity.ConnectivityPlugins;

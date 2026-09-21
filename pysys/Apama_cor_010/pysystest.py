@@ -20,7 +20,7 @@ __pysys_authors__ = "sample"
 
 __pysys_groups__ = "ant"
 
-# Copyright (c) 2015-2016, 2018, 2020-2022 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.
+# Copyright (c) 2015-present Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.
 # Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
 
 import pysys.basetest, pysys.mappers

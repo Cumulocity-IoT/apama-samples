@@ -1,7 +1,7 @@
 /**
  * Version 2 of this Sample application.  Increments a decimal count by random increment on every Process() event.
  *
- * $Copyright (c) 2017 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$ 
+ * Copyright (c) 2017-present Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors. 
  * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
  */
 package com.apama.sample.redeploy.v2;

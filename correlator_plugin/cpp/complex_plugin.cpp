@@ -12,7 +12,7 @@
  * - has setters and getters for the real and imaginary parts
  * - has the ability to add a second number to itself
  *
- * $Copyright (c) 2016-2017, 2022 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+ * Copyright (c) 2016-present Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.
  * Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
  * 
  */

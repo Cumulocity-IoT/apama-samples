@@ -1,14 +1,13 @@
 // Copyright (c) 2013-present Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.
 // Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
 
+/**
+  A more complex correlator Java plugin with multiple methods, arrays and chunks.
+*/
 @com.apama.epl.plugin.annotation.ApplicationJar(
 	name = "ComplexPluginJar",
 	classpath = ""
 )
-
-/**
-  A more complex correlator Java plugin with multiple methods, arrays and chunks.
-*/
 @com.apama.epl.plugin.annotation.EPLPlugin(
 	name="ComplexPlugin",
 	description="A test plugin"

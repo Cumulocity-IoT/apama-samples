@@ -9,7 +9,7 @@ __pysys_authors__ = "sample"
 #__pysys_skipped_reason__   = "Skipped until Bug-1234 is fixed"
 
 # Sample PySys testcase
-# Copyright (c) 2018, 2021-2022 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors. 
+# Copyright (c) 2018-present Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors. 
 # Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH. 
 
 import http.client

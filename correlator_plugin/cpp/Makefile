@@ -4,8 +4,7 @@
 # GNU Make compatible makefile for the example plugins.
 #
 #
-# $Copyright(c) 2002, 2004-2006, 2009-2010 Progress Software Corporation (PSC). All rights reserved.$
-# $Copyright (c) 2013, 2014, 2016-2017, 2019, 2022 Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.$
+# Copyright (c) 2002-present Cumulocity GmbH, Duesseldorf, Germany and/or its affiliates and/or their licensors.
 # Use, reproduction, transfer, publication or disclosure is prohibited except as specifically provided for in your License Agreement with Cumulocity GmbH.
 # 
 
